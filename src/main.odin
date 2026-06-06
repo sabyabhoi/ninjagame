@@ -6,7 +6,8 @@ WIDTH :: 800
 HEIGHT :: 600
 TITLE :: "Ninja Game"
 
-fixed_update :: proc(w: ^World, dt: f32) {
+fixed_update :: proc(w: ^World, input: ^InputState, player: Entity, dt: f32) {
+	player_input_system(w, input, player)
 	physics_system(w, dt)
 }
 
@@ -30,6 +31,8 @@ main :: proc() {
 	world_init(&w)
 	defer world_destroy(&w)
 
+	input: InputState
+
 	player := entity_create(&w)
 	add_transform(&w, player, Transform{position = {100, 100}})
 	add_velocity(&w, player, Velocity{value = {50, 0}})
@@ -37,12 +40,14 @@ main :: proc() {
 	raylib.SetTargetFPS(60)
 
 	for !raylib.WindowShouldClose() {
+		input_update(&input)
+
 		dt := raylib.GetFrameTime()
 
 		accumulator += dt
 
 		for ; accumulator >= FIXED_TIMESTAMP; accumulator -= FIXED_TIMESTAMP {
-			fixed_update(&w, FIXED_TIMESTAMP)
+			fixed_update(&w, &input, player, FIXED_TIMESTAMP)
 		}
 
 

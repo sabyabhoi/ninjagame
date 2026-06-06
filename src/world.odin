@@ -45,6 +45,8 @@ entity_create :: proc(w: ^World) -> Entity {
 }
 
 entity_destroy :: proc(w: ^World, e: Entity) {
+	delete_key(&w.transforms, e)
+	delete_key(&w.velocities, e)
 	append(&w.free_list, e)
 }
 
@@ -65,5 +67,18 @@ physics_system :: proc(w: ^World, dt: f32) {
 			t.position += vel.value * dt
 		}
 	}
+}
+
+player_input_system :: proc(w: ^World, input: ^InputState, player: Entity) {
+	vel, ok := &w.velocities[player]
+	if !ok do return
+
+	SPEED :: f32(300)
+	vel.value = {0, 0}
+
+	if .MoveLeft in input.held do vel.value.x -= SPEED
+	if .MoveRight in input.held do vel.value.x += SPEED
+	if .MoveUp in input.held do vel.value.y -= SPEED
+	if .MoveDown in input.held do vel.value.y += SPEED
 }
 
