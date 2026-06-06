@@ -10,7 +10,14 @@ fixed_update :: proc(w: ^World, dt: f32) {
 	physics_system(w, dt)
 }
 
-draw :: proc() {}
+draw :: proc(w: ^World) {
+	raylib.ClearBackground(raylib.WHITE)
+
+	size: f32 = 20
+	for entity, &transform in w.transforms {
+		raylib.DrawRectangleV(transform.position, {size, size}, raylib.BLACK)
+	}
+}
 
 main :: proc() {
 	FIXED_TIMESTAMP :: 1.0 / 60.0
@@ -40,7 +47,7 @@ main :: proc() {
 
 
 		raylib.BeginDrawing()
-		draw()
+		draw(&w)
 		raylib.EndDrawing()
 	}
 }
