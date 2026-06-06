@@ -14,10 +14,12 @@ fixed_update :: proc(w: ^World, input: ^InputState, player: Entity, dt: f32) {
 draw :: proc(w: ^World) {
 	raylib.ClearBackground(raylib.WHITE)
 
-	size: f32 = 20
-	for entity, &transform in w.transforms {
-		raylib.DrawRectangleV(transform.position, {size, size}, raylib.BLACK)
-	}
+	render_system(w)
+
+	// size: f32 = 20
+	// for entity, &transform in w.transforms {
+	// 	raylib.DrawRectangleV(transform.position, {size, size}, raylib.BLACK)
+	// }
 }
 
 main :: proc() {
@@ -27,6 +29,11 @@ main :: proc() {
 	raylib.InitWindow(WIDTH, HEIGHT, TITLE)
 	defer raylib.CloseWindow()
 
+	a: Assets
+	assets_init(&a)
+	defer assets_destroy(&a)
+
+
 	w: World
 	world_init(&w)
 	defer world_destroy(&w)
@@ -35,7 +42,10 @@ main :: proc() {
 
 	player := entity_create(&w)
 	add_transform(&w, player, Transform{position = {100, 100}})
-	add_velocity(&w, player, Velocity{value = {50, 0}})
+	add_velocity(&w, player, Velocity{})
+
+	texture := assets_load_texture(&a, "assets/Actor/Character/Boy/SeparateAnim/Idle.png")
+	add_sprite(&w, player, Sprite{texture = texture, tint = raylib.WHITE})
 
 	raylib.SetTargetFPS(60)
 
