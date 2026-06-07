@@ -10,9 +10,10 @@ World :: struct {
 	free_list:  [dynamic]Entity,
 
 	// Components
-	transforms: map[Entity]Transform,
-	velocities: map[Entity]Velocity,
-	sprites:    map[Entity]Sprite,
+	transforms:  map[Entity]Transform,
+	velocities:  map[Entity]Velocity,
+	sprites:     map[Entity]Sprite,
+	animations:  map[Entity]AnimationState,
 }
 
 Transform :: struct {
@@ -36,6 +37,7 @@ world_init :: proc(w: ^World) {
 	w.transforms = make(map[Entity]Transform)
 	w.velocities = make(map[Entity]Velocity)
 	w.sprites = make(map[Entity]Sprite)
+	w.animations = make(map[Entity]AnimationState)
 }
 
 world_destroy :: proc(w: ^World) {
@@ -43,6 +45,7 @@ world_destroy :: proc(w: ^World) {
 	delete(w.transforms)
 	delete(w.velocities)
 	delete(w.sprites)
+	delete(w.animations)
 }
 
 entity_create :: proc(w: ^World) -> Entity {
@@ -58,12 +61,14 @@ entity_destroy :: proc(w: ^World, e: Entity) {
 	delete_key(&w.transforms, e)
 	delete_key(&w.velocities, e)
 	delete_key(&w.sprites, e)
+	delete_key(&w.animations, e)
 	append(&w.free_list, e)
 }
 
 add_transform :: proc(w: ^World, e: Entity, t: Transform) {w.transforms[e] = t}
 add_velocity :: proc(w: ^World, e: Entity, v: Velocity) {w.velocities[e] = v}
 add_sprite :: proc(w: ^World, e: Entity, s: Sprite) {w.sprites[e] = s}
+add_animation :: proc(w: ^World, e: Entity, a: AnimationState) {w.animations[e] = a}
 
 get_transform :: proc(w: ^World, e: Entity) -> ^Transform {return &w.transforms[e]}
 get_velocity :: proc(w: ^World, e: Entity) -> ^Velocity {return &w.velocities[e]}
@@ -72,6 +77,7 @@ get_sprite :: proc(w: ^World, e: Entity) -> ^Sprite {return &w.sprites[e]}
 has_transform :: proc(w: ^World, e: Entity) -> bool {return e in w.transforms}
 has_velocity :: proc(w: ^World, e: Entity) -> bool {return e in w.velocities}
 has_sprite :: proc(w: ^World, e: Entity) -> bool {return e in w.sprites}
+has_animation :: proc(w: ^World, e: Entity) -> bool {return e in w.animations}
 
 // Systems
 
