@@ -126,32 +126,58 @@ parse_csv :: proc(raw_data: string, rows, cols: u64) -> (result_arr: [][]u64, ok
 	r.trim_leading_space = true
 	r.reuse_record = true
 	r.reuse_record_buffer = true
-	r.fields_per_record = int(cols)
+	// Tiled writes a trailing comma on each row (and the final row has none), so the
+	// field count per record varies. Disable the check and validate columns ourselves.
+	r.fields_per_record = -1
 	defer csv.reader_destroy(&r)
 
 	csv.reader_init_with_string(&r, raw_data)
 
 	row_idx := 0
-	for record, idx in csv.iterator_next(&r) {
+	for record in csv.iterator_next(&r) {
 		if u64(row_idx) >= rows {
-			fmt.eprintfln("Warning: More rows (%d) than expected (%d)", idx + 1, rows)
+			fmt.eprintfln("Warning: More rows than expected (%d)", rows)
 			break
 		}
 
-		if u64(len(record)) != cols {
-			fmt.eprintfln("Row %d has %d columns, expected %d", idx, len(record), cols)
-			return nil, false
-		}
-		// Convert each field
-		for field, col_idx in record {
+		col_idx := 0
+		for field in record {
+			// Skip empty fields, e.g. the one produced by Tiled's trailing comma.
+			if strings.trim_space(field) == "" {
+				continue
+			}
+
+			if u64(col_idx) >= cols {
+				fmt.eprintfln("Row %d has more columns than expected (%d)", row_idx, cols)
+				return nil, false
+			}
+
 			value, ok := strconv.parse_u64(field)
 			if !ok {
 				fmt.eprintfln("Failed to convert at [%d,%d]: %q", row_idx, col_idx, field)
 				return nil, false
 			}
 			result[row_idx][col_idx] = value
+			col_idx += 1
+		}
+
+		if u64(col_idx) != cols {
+			fmt.eprintfln("Row %d has %d columns, expected %d", row_idx, col_idx, cols)
+			return nil, false
 		}
 		row_idx += 1
+	}
+
+	// iterator_next stops on the first error (including EOF) by returning more=false.
+	// Anything other than EOF is a genuine parse failure we should report.
+	if err := csv.iterator_last_error(r); err != nil && !csv.is_io_error(err, .EOF) {
+		fmt.eprintfln("CSV parse error: %v", err)
+		return nil, false
+	}
+
+	if u64(row_idx) != rows {
+		fmt.eprintfln("Parsed %d rows, expected %d", row_idx, rows)
+		return nil, false
 	}
 
 	return result, true
