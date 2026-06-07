@@ -24,9 +24,9 @@ AnimationState :: struct {
 }
 
 WALK_COL_DOWN :: 0
-WALK_COL_LEFT :: 1
-WALK_COL_RIGHT :: 2
-WALK_COL_UP :: 3
+WALK_COL_LEFT :: 2
+WALK_COL_RIGHT :: 3
+WALK_COL_UP :: 1
 
 WALK_DIRECTIONS :: 4
 WALK_FRAMES_PER_DIRECTION :: 4
@@ -100,7 +100,12 @@ clip_idle_from_walk_grid :: proc(
 
 	frames := make([]raylib.Rectangle, directions)
 	for col in 0 ..< directions {
-		frames[col] = {x = f32(col) * frame_w, y = 0, width = frame_w, height = frame_h}
+		frames[col] = {
+			x      = f32(col) * frame_w,
+			y      = 0,
+			width  = frame_w,
+			height = frame_h,
+		}
 	}
 
 	return {
@@ -152,8 +157,7 @@ animation_system :: proc(w: ^World, a: ^Assets, dt: f32) {
 		state.timer += dt
 		for state.timer >= clip.duration {
 			state.timer -= clip.duration
-			state.frame_index =
-				(state.frame_index + 1) % clip.frames_per_direction
+			state.frame_index = (state.frame_index + 1) % clip.frames_per_direction
 		}
 
 		animation_apply_sprite_frame(sprite, &state, clip)
@@ -201,3 +205,4 @@ player_animation_system :: proc(w: ^World) {
 		}
 	}
 }
+

@@ -17,7 +17,7 @@ Config :: struct {
 }
 
 ASSET_PATHS :: AssetPaths {
-	walk = "assets/Actor/Character/Boy/SeparateAnim/Walk.png",
+	walk = "assets/Actor/CharacterAnimated/NinjaGreen/Separate/Walk.png",
 }
 
 CONFIG :: Config {
@@ -31,3 +31,4 @@ CONFIG :: Config {
 	fixed_timestep      = 1.0 / 60.0,
 	target_fps          = 60,
 }
+

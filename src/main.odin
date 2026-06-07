@@ -1,5 +1,6 @@
 package main
 
+import "core:strings"
 import "vendor:raylib"
 
 fixed_update :: proc(w: ^World, a: ^Assets, input: ^InputState, dt: f32) {
@@ -18,7 +19,11 @@ draw :: proc(w: ^World) {
 main :: proc() {
 	accumulator: f32 = 0
 
-	raylib.InitWindow(CONFIG.window_width, CONFIG.window_height, CONFIG.window_title)
+	raylib.InitWindow(
+		CONFIG.window_width,
+		CONFIG.window_height,
+		strings.clone_to_cstring(CONFIG.window_title),
+	)
 	defer raylib.CloseWindow()
 
 	a: Assets
@@ -75,3 +80,4 @@ main :: proc() {
 		raylib.EndDrawing()
 	}
 }
+

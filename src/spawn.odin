@@ -16,3 +16,4 @@ spawn_player :: proc(w: ^World, a: ^Assets, position: raylib.Vector2) -> Entity 
 	animation_apply_initial_frame(w, a, player)
 	return player
 }
+

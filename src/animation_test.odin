@@ -5,7 +5,10 @@ import "vendor:raylib"
 
 @(test)
 test_clip_from_horizontal_strip :: proc(t: ^testing.T) {
-	tex := raylib.Texture2D{width = 32, height = 8}
+	tex := raylib.Texture2D {
+		width  = 32,
+		height = 8,
+	}
 	clip := clip_from_horizontal_strip(tex, 4, 0.15)
 	defer delete(clip.frames)
 
@@ -18,7 +21,10 @@ test_clip_from_horizontal_strip :: proc(t: ^testing.T) {
 
 @(test)
 test_clip_from_directional_grid :: proc(t: ^testing.T) {
-	tex := raylib.Texture2D{width = 16, height = 16}
+	tex := raylib.Texture2D {
+		width  = 16,
+		height = 16,
+	}
 	directions := 4
 	frames_per_direction := 4
 	clip := clip_from_directional_grid(tex, directions, frames_per_direction, 0.10)
@@ -39,9 +45,16 @@ test_clip_from_directional_grid :: proc(t: ^testing.T) {
 
 @(test)
 test_animation_frame_index :: proc(t: ^testing.T) {
-	clip := AnimationClip{directions = 4, frames_per_direction = 4}
-	state := AnimationState{frame_index = 2, column = 1}
+	clip := AnimationClip {
+		directions           = 4,
+		frames_per_direction = 4,
+	}
+	state := AnimationState {
+		frame_index = 2,
+		column      = 1,
+	}
 
 	idx := animation_frame_index(&state, &clip)
 	testing.expect(t, idx == 6, "expected frame index 6 for column 1 frame 2")
 }
+

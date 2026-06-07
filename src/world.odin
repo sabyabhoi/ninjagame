@@ -6,8 +6,8 @@ import "vendor:raylib"
 Entity :: distinct u32
 
 World :: struct {
-	next_id:   Entity,
-	free_list: [dynamic]Entity,
+	next_id:           Entity,
+	free_list:         [dynamic]Entity,
 
 	// Components
 	transforms:        map[Entity]Transform,
@@ -169,3 +169,4 @@ render_system :: proc(w: ^World) {
 		raylib.DrawTexturePro(sprite.texture, src, dest, {0, 0}, 0, sprite.tint)
 	}
 }
+
