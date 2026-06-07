@@ -15,11 +15,6 @@ draw :: proc(w: ^World) {
 	raylib.ClearBackground(raylib.WHITE)
 
 	render_system(w)
-
-	// size: f32 = 20
-	// for entity, &transform in w.transforms {
-	// 	raylib.DrawRectangleV(transform.position, {size, size}, raylib.BLACK)
-	// }
 }
 
 main :: proc() {
@@ -41,7 +36,7 @@ main :: proc() {
 	input: InputState
 
 	player := entity_create(&w)
-	add_transform(&w, player, Transform{position = {100, 100}})
+	add_transform(&w, player, Transform{position = {100, 100}, scale = {4, 4}})
 	add_velocity(&w, player, Velocity{})
 
 	texture := assets_load_texture(&a, "assets/Actor/Character/Boy/SeparateAnim/Idle.png")
