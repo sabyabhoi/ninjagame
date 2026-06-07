@@ -6,8 +6,8 @@ import "engine"
 
 // Translates held movement actions into velocity for player-controlled entities.
 player_input_system :: proc(w: ^engine.World, input: ^engine.InputState) {
-	for entity in w.player_controlled {
-		vel, ok := engine.get_velocity(w, entity)
+	for entity in w.player_controlled.data {
+		vel, ok := engine.store_get(&w.velocities, entity)
 		if !ok do continue
 
 		vel.value = {0, 0}
@@ -21,11 +21,11 @@ player_input_system :: proc(w: ^engine.World, input: ^engine.InputState) {
 
 // Chooses walk/idle animation kind and facing direction from the player's velocity.
 player_animation_system :: proc(w: ^engine.World) {
-	for entity in w.player_controlled {
-		state, state_ok := engine.get_animation(w, entity)
+	for entity in w.player_controlled.data {
+		state, state_ok := engine.store_get(&w.animations, entity)
 		if !state_ok do continue
 
-		vel, vel_ok := engine.get_velocity(w, entity)
+		vel, vel_ok := engine.store_get(&w.velocities, entity)
 		if !vel_ok do continue
 
 		prev_kind := state.kind

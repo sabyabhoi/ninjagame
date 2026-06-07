@@ -138,8 +138,8 @@ animation_apply_sprite_frame :: proc(
 
 // Sets an entity's sprite to the first frame of its current animation clip.
 animation_apply_initial_frame :: proc(w: ^World, a: ^Assets, entity: Entity) {
-	state, state_ok := get_animation(w, entity)
-	sprite, sprite_ok := get_sprite(w, entity)
+	state, state_ok := store_get(&w.animations, entity)
+	sprite, sprite_ok := store_get(&w.sprites, entity)
 	if !state_ok || !sprite_ok do return
 
 	clip := &a.clips[state.kind]

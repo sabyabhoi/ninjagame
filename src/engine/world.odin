@@ -9,32 +9,32 @@ World :: struct {
 	free_list:         [dynamic]Entity, // Ids recycled by destroyed entities.
 
 	// Components
-	transforms:        map[Entity]Transform, // World position and draw scale per entity.
-	velocities:        map[Entity]Velocity, // Movement speed in pixels per second.
-	sprites:           map[Entity]Sprite, // Texture and source rect used for rendering.
-	animations:        map[Entity]AnimationState, // Current clip, frame, and playback timer.
-	player_controlled: map[Entity]PlayerControlled, // Entities driven by keyboard input.
+	transforms:        ComponentStore(Transform), // World position and draw scale per entity.
+	velocities:        ComponentStore(Velocity), // Movement speed in pixels per second.
+	sprites:           ComponentStore(Sprite), // Texture and source rect used for rendering.
+	animations:        ComponentStore(AnimationState), // Current clip, frame, and playback timer.
+	player_controlled: ComponentStore(PlayerControlled), // Entities driven by keyboard input.
 }
 
 // Allocates and initializes all component maps and bookkeeping for a fresh world.
 world_init :: proc(w: ^World) {
 	w.next_id = 1
 	w.free_list = make([dynamic]Entity)
-	w.transforms = make(map[Entity]Transform)
-	w.velocities = make(map[Entity]Velocity)
-	w.sprites = make(map[Entity]Sprite)
-	w.animations = make(map[Entity]AnimationState)
-	w.player_controlled = make(map[Entity]PlayerControlled)
+	store_init(&w.transforms)
+	store_init(&w.velocities)
+	store_init(&w.sprites)
+	store_init(&w.animations)
+	store_init(&w.player_controlled)
 }
 
 // Frees all component maps and bookkeeping owned by the world.
 world_destroy :: proc(w: ^World) {
 	delete(w.free_list)
-	delete(w.transforms)
-	delete(w.velocities)
-	delete(w.sprites)
-	delete(w.animations)
-	delete(w.player_controlled)
+	store_destroy(&w.transforms)
+	store_destroy(&w.velocities)
+	store_destroy(&w.sprites)
+	store_destroy(&w.animations)
+	store_destroy(&w.player_controlled)
 }
 
 // Returns a new entity id, reusing a freed id when one is available.
@@ -49,11 +49,11 @@ entity_create :: proc(w: ^World) -> Entity {
 
 // Removes all components for an entity and recycles its id onto the free list.
 entity_destroy :: proc(w: ^World, e: Entity) {
-	delete_key(&w.transforms, e)
-	delete_key(&w.velocities, e)
-	delete_key(&w.sprites, e)
-	delete_key(&w.animations, e)
-	delete_key(&w.player_controlled, e)
+	store_remove(&w.transforms, e)
+	store_remove(&w.velocities, e)
+	store_remove(&w.sprites, e)
+	store_remove(&w.animations, e)
+	store_remove(&w.player_controlled, e)
 	append(&w.free_list, e)
 }
 

@@ -22,12 +22,12 @@ World :: struct {
     next_id:   Entity,
     free_list: [dynamic]Entity,
 
-    // Components (one map per component type)
-    transforms:        map[Entity]Transform,
-    velocities:        map[Entity]Velocity,
-    sprites:           map[Entity]Sprite,
-    animations:        map[Entity]AnimationState,
-    player_controlled: map[Entity]PlayerControlled,
+    // Components (one generic store per component type)
+    transforms:        ComponentStore(Transform),
+    velocities:        ComponentStore(Velocity),
+    sprites:           ComponentStore(Sprite),
+    animations:        ComponentStore(AnimationState),
+    player_controlled: ComponentStore(PlayerControlled),
 }
 ```
 
@@ -45,18 +45,19 @@ Reusing IDs keeps numbers small and avoids running out.
 
 ### Components
 
-Each component type gets its **own map** from `Entity` to that data. To find an
-entity's position, you look it up in the `transforms` map by its ID.
+Each component type gets its **own store** — a generic `ComponentStore(T)` wrapping
+a map from `Entity` to that data. To find an entity's position, you look it up
+in the `transforms` store by its ID.
 
-This "one map per component" approach means:
+This "one store per component" approach means:
 
-- An entity *has* a component only if its ID is a key in that map.
-- Adding behavior data is as simple as inserting into a map
-  (`add_transform`, `add_velocity`, ...).
-- Removing it is `delete_key`.
+- An entity *has* a component only if its ID is a key in that store's map.
+- Adding behavior data is as simple as `store_add(&w.transforms, entity, data)`.
+- Removing it is `store_remove(&w.transforms, entity)`.
 
-Helper getters like `get_transform` return a pointer plus an `ok` boolean, so
-systems can safely skip entities that lack a component.
+Generic helpers in `store.odin` — `store_get`, `store_add`, `store_remove` —
+work for every component type. `store_get` returns a pointer plus an `ok`
+boolean, so systems can safely skip entities that lack a component.
 
 ### Systems
 

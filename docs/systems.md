@@ -59,8 +59,8 @@ Moves entities. For every `Velocity`, it finds the matching `Transform` and adds
 frame-rate independent.
 
 ```odin
-for entity, &vel in w.velocities {
-    t, ok := get_transform(w, entity)
+for entity, &vel in w.velocities.data {
+    t, ok := store_get(&w.transforms, entity)
     if !ok do continue
     t.position += vel.value * dt
 }

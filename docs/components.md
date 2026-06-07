@@ -72,11 +72,11 @@ components:
 ```odin
 spawn_player :: proc(w: ^World, a: ^Assets, position: raylib.Vector2) -> Entity {
     player := entity_create(w)
-    add_transform(w, player, Transform{position = position, scale = {4, 4}})
-    add_velocity(w, player, Velocity{})
-    add_sprite(w, player, Sprite{texture = a.clips[.Idle].texture, tint = WHITE})
-    add_animation(w, player, AnimationState{kind = .Idle})
-    add_player_controlled(w, player)
+    store_add(&w.transforms, player, Transform{position = position, scale = {4, 4}})
+    store_add(&w.velocities, player, Velocity{})
+    store_add(&w.sprites, player, Sprite{texture = a.clips[.Idle].texture, tint = WHITE})
+    store_add(&w.animations, player, AnimationState{kind = .Idle})
+    store_add(&w.player_controlled, player, PlayerControlled{})
     animation_apply_initial_frame(w, a, player)
     return player
 }

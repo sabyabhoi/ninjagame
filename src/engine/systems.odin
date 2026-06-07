@@ -5,8 +5,8 @@ import "vendor:raylib"
 
 // Advances each entity's position by its velocity scaled by the timestep.
 physics_system :: proc(w: ^World, dt: f32) {
-	for entity, &vel in w.velocities {
-		t, ok := get_transform(w, entity)
+	for entity, &vel in w.velocities.data {
+		t, ok := store_get(&w.transforms, entity)
 		if !ok do continue
 		t.position += vel.value * dt
 	}
@@ -23,8 +23,8 @@ render_system :: proc(w: ^World) {
 	drawables: [dynamic]Drawable
 	defer delete(drawables)
 
-	for entity in w.sprites {
-		t, ok := get_transform(w, entity)
+	for entity in w.sprites.data {
+		t, ok := store_get(&w.transforms, entity)
 		if !ok do continue
 
 		append(&drawables, Drawable{entity = entity, sort_y = t.position.y})
@@ -35,8 +35,8 @@ render_system :: proc(w: ^World) {
 	})
 
 	for drawable in drawables {
-		sprite, sprite_ok := get_sprite(w, drawable.entity)
-		t, transform_ok := get_transform(w, drawable.entity)
+		sprite, sprite_ok := store_get(&w.sprites, drawable.entity)
+		t, transform_ok := store_get(&w.transforms, drawable.entity)
 		if !sprite_ok || !transform_ok do continue
 
 		src := sprite.source
@@ -57,8 +57,8 @@ render_system :: proc(w: ^World) {
 
 // Advances animation timers and applies the resulting frame to each animated sprite.
 animation_system :: proc(w: ^World, a: ^Assets, dt: f32) {
-	for entity, &state in w.animations {
-		sprite, sprite_ok := get_sprite(w, entity)
+	for entity, &state in w.animations.data {
+		sprite, sprite_ok := store_get(&w.sprites, entity)
 		if !sprite_ok do continue
 
 		clip := &a.clips[state.kind]
