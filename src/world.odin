@@ -3,35 +3,41 @@ package main
 import "core:slice"
 import "vendor:raylib"
 
+// Opaque handle that identifies a single game object in the world.
 Entity :: distinct u32
 
+// ECS container holding entity ids and their component maps.
 World :: struct {
-	next_id:           Entity,
-	free_list:         [dynamic]Entity,
+	next_id:           Entity, // Next id to assign when the free list is empty.
+	free_list:         [dynamic]Entity, // Ids recycled by destroyed entities.
 
 	// Components
-	transforms:        map[Entity]Transform,
-	velocities:        map[Entity]Velocity,
-	sprites:           map[Entity]Sprite,
-	animations:        map[Entity]AnimationState,
-	player_controlled: map[Entity]PlayerControlled,
+	transforms:        map[Entity]Transform, // World position and draw scale per entity.
+	velocities:        map[Entity]Velocity, // Movement speed in pixels per second.
+	sprites:           map[Entity]Sprite, // Texture and source rect used for rendering.
+	animations:        map[Entity]AnimationState, // Current clip, frame, and playback timer.
+	player_controlled: map[Entity]PlayerControlled, // Entities driven by keyboard input.
 }
 
+// Spatial placement and size multiplier for an entity on screen.
 Transform :: struct {
-	position: raylib.Vector2,
-	scale:    raylib.Vector2,
+	position: raylib.Vector2, // Top-left corner in screen space.
+	scale:    raylib.Vector2, // Multiplier applied to the sprite source rect.
 }
 
+// Per-frame movement vector for physics integration.
 Velocity :: struct {
-	value: raylib.Vector2,
+	value: raylib.Vector2, // Pixels per second along each axis.
 }
 
+// Drawable appearance pulled from a texture atlas region.
 Sprite :: struct {
-	texture: raylib.Texture2D,
-	source:  raylib.Rectangle,
-	tint:    raylib.Color,
+	texture: raylib.Texture2D, // GPU texture backing this sprite.
+	source:  raylib.Rectangle, // Sub-rectangle within the texture; full texture when zero-sized.
+	tint:    raylib.Color, // Color multiplier applied at draw time.
 }
 
+// Marker component: entity receives player input each tick.
 PlayerControlled :: struct {}
 
 // Allocates and initializes all component maps and bookkeeping for a fresh world.
@@ -144,9 +150,10 @@ player_input_system :: proc(w: ^World, input: ^InputState) {
 	}
 }
 
+// Temporary render entry used to depth-sort sprites before drawing.
 Drawable :: struct {
-	entity: Entity,
-	sort_y: f32,
+	entity: Entity, // Entity whose sprite should be drawn.
+	sort_y: f32, // Y position used for back-to-front ordering.
 }
 
 // Draws all sprites sorted back-to-front by their y position for depth ordering.

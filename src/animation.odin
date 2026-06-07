@@ -3,24 +3,27 @@ package main
 import "core:math"
 import "vendor:raylib"
 
+// Sprite-sheet animation data: frame rects, timing, and directional layout.
 AnimationClip :: struct {
-	texture:              raylib.Texture2D,
-	frames:               []raylib.Rectangle,
-	duration:             f32,
-	directions:           int,
-	frames_per_direction: int,
+	texture:              raylib.Texture2D, // Shared texture for all frames in this clip.
+	frames:               []raylib.Rectangle, // Source rects laid out by direction then frame.
+	duration:             f32, // Seconds each frame is displayed before advancing.
+	directions:           int, // Number of facing columns in the source grid.
+	frames_per_direction: int, // Animation frames per facing direction.
 }
 
+// Named animation clips available to entities.
 AnimationKind :: enum {
 	Idle,
 	Walk,
 }
 
+// Per-entity playback state for the currently active animation clip.
 AnimationState :: struct {
-	kind:        AnimationKind,
-	frame_index: int,
-	column:      int,
-	timer:       f32,
+	kind:        AnimationKind, // Which clip (idle, walk, etc.) is playing.
+	frame_index: int, // Current frame within the active direction column.
+	column:      int, // Facing direction index into the clip's grid.
+	timer:       f32, // Elapsed time toward advancing to the next frame.
 }
 
 WALK_COL_DOWN :: 0

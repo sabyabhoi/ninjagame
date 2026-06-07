@@ -2,6 +2,7 @@ package main
 
 import "vendor:raylib"
 
+// Game actions mapped from keyboard keys.
 Action :: enum {
 	MoveLeft,
 	MoveRight,
@@ -11,10 +12,11 @@ Action :: enum {
 	Attack,
 }
 
+// Snapshot of player input for the current frame.
 InputState :: struct {
-	pressed:  bit_set[Action],
-	held:     bit_set[Action],
-	released: bit_set[Action],
+	pressed:  bit_set[Action], // Actions whose keys were pressed this frame.
+	held:     bit_set[Action], // Actions whose keys are currently down.
+	released: bit_set[Action], // Actions whose keys were released this frame.
 }
 
 key_bindings := [Action]raylib.KeyboardKey {

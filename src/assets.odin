@@ -4,9 +4,10 @@ import "core:fmt"
 import "core:strings"
 import "vendor:raylib"
 
+// Central store for loaded textures and registered animation clips.
 Assets :: struct {
-	textures: map[string]raylib.Texture2D,
-	clips:    [AnimationKind]AnimationClip,
+	textures: map[string]raylib.Texture2D, // Path-keyed cache of loaded GPU textures.
+	clips:    [AnimationKind]AnimationClip, // One clip per animation kind (idle, walk, etc.).
 }
 
 // Initializes the asset store's texture cache.
