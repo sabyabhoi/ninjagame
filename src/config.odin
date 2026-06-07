@@ -23,8 +23,8 @@ ASSET_PATHS :: AssetPaths {
 }
 
 CONFIG :: Config {
-	window_width        = 800,
-	window_height       = 600,
+	window_width        = 1200,
+	window_height       = 800,
 	window_title        = "Ninja Game",
 	player_speed        = 300,
 	player_scale        = 4,

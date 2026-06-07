@@ -82,5 +82,9 @@ main :: proc() {
 		draw(&w)
 		raylib.EndDrawing()
 	}
+	// tilemap: Tilemap
+	// load_world(&tilemap, "assets/map/map1.tmx")
+	tileset: Tileset
+	load_tileset(&tileset, "assets/map/TilesetFloor.tsx")
 }
 
