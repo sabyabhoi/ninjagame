@@ -4,6 +4,15 @@ Simple top-down game built with [Odin](https://odin-lang.org/) and [Raylib](http
 
 See [`docs/`](docs/README.md) for an explanation of the architecture.
 
+## Project layout
+
+```
+src/
+  main.odin, spawn.odin, player.odin   # package main — game loop and player logic
+  config/config.odin                   # package config — settings and asset paths
+  engine/                              # package engine — ECS, animation, assets, input, tilemap
+```
+
 ## Prerequisites
 
 Asset sprites live under `assets/` (e.g. `assets/Actor/Character/Boy/SeparateAnim/Idle.png`). Run the game from the project root so those paths resolve.
@@ -22,5 +31,5 @@ odin build src -out:ninjagame
 
 ```bash
 nix develop
-odin test src
+odin test src/engine
 ```

@@ -1,9 +1,21 @@
 # Architecture: ECS and the Game Loop
 
+## Packages
+
+The source is split into three Odin packages:
+
+| Package | Path | Responsibility |
+|---------|------|----------------|
+| `main` | `src/` | Game loop, player spawn, player-specific systems |
+| `config` | `src/config/` | Tunable settings (`CONFIG`) and asset paths (`ASSET_PATHS`) |
+| `engine` | `src/engine/` | ECS world, components, generic systems, animation, assets, input, tilemap |
+
+`main` imports `engine` and `config`. `engine` has no dependency on `config` — game-specific systems that read `CONFIG` (player input and animation) live in `src/player.odin`.
+
 ## The ECS model
 
 The game keeps **all** of its state in one struct called `World`
-(`src/world.odin`). Think of it as a database.
+(`src/engine/world.odin`). Think of it as a database.
 
 ```odin
 World :: struct {
@@ -55,7 +67,7 @@ lives. Components stay as pure data. See [systems.md](systems.md).
 
 ## The game loop
 
-The whole program is driven by the loop in `main` (`src/main.odin`). In order:
+The whole program is driven by the loop in `main` (`src/main.odin`). Player-specific systems (`player_input_system`, `player_animation_system`) run from `src/player.odin`; generic engine systems live in `src/engine/systems.odin`. In order:
 
 1. **Setup**
    - Open the window (size/title come from `CONFIG`).
@@ -99,11 +111,11 @@ machine still only steps logic 60 times a second.
 `fixed_update` runs the systems in a deliberate order:
 
 ```odin
-fixed_update :: proc(w: ^World, a: ^Assets, input: ^InputState, dt: f32) {
-    player_input_system(w, input)     // 1. turn key presses into velocity
-    player_animation_system(w)        // 2. pick Idle/Walk + facing direction
-    animation_system(w, a, dt)        // 3. advance animation frames over time
-    physics_system(w, dt)             // 4. move entities by their velocity
+fixed_update :: proc(w: ^engine.World, a: ^engine.Assets, input: ^engine.InputState, dt: f32) {
+    player_input_system(w, input)          // 1. turn key presses into velocity (main)
+    player_animation_system(w)             // 2. pick Idle/Walk + facing direction (main)
+    engine.animation_system(w, a, dt)      // 3. advance animation frames over time
+    engine.physics_system(w, dt)           // 4. move entities by their velocity
 }
 ```
 

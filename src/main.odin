@@ -1,21 +1,23 @@
 package main
 
+import "config"
 import "core:strings"
+import "engine"
 import "vendor:raylib"
 
 // Runs one fixed-timestep simulation tick: input, animation, and physics systems.
-fixed_update :: proc(w: ^World, a: ^Assets, input: ^InputState, dt: f32) {
+fixed_update :: proc(w: ^engine.World, a: ^engine.Assets, input: ^engine.InputState, dt: f32) {
 	player_input_system(w, input)
 	player_animation_system(w)
-	animation_system(w, a, dt)
-	physics_system(w, dt)
+	engine.animation_system(w, a, dt)
+	engine.physics_system(w, dt)
 }
 
 // Clears the screen and renders the current frame.
-draw :: proc(w: ^World) {
+draw :: proc(w: ^engine.World) {
 	raylib.ClearBackground(raylib.WHITE)
 
-	render_system(w)
+	engine.render_system(w)
 }
 
 // Entry point: sets up the window, assets, world, and runs the main game loop.
@@ -23,69 +25,70 @@ main :: proc() {
 	accumulator: f32 = 0
 
 	raylib.InitWindow(
-		CONFIG.window_width,
-		CONFIG.window_height,
-		strings.clone_to_cstring(CONFIG.window_title),
+		config.CONFIG.window_width,
+		config.CONFIG.window_height,
+		strings.clone_to_cstring(config.CONFIG.window_title),
 	)
 	defer raylib.CloseWindow()
 
-	a: Assets
-	assets_init(&a)
-	defer assets_destroy(&a)
+	a: engine.Assets
+	engine.assets_init(&a)
+	defer engine.assets_destroy(&a)
 
-	// tileset: Tileset
-	// if !load_tileset(&a, &tileset, ASSET_PATHS.tileset) {
+	// tileset: engine.Tileset
+	// if !engine.load_tileset(&a, &tileset, config.ASSET_PATHS.tileset) {
 	// 	panic("Failed to load tileset")
 	// }
 
-	tilemap: Tilemap
-	if !load_world(&a, &tilemap, ASSET_PATHS.tilemap) {
+	tilemap: engine.Tilemap
+	if !engine.load_world(&a, &tilemap, config.ASSET_PATHS.tilemap) {
 		panic("Failed to load world")
 	}
 
-	walk_tex, walk_ok := assets_load_texture(&a, ASSET_PATHS.walk)
+	walk_tex, walk_ok := engine.assets_load_texture(&a, config.ASSET_PATHS.walk)
 	if !walk_ok do panic("Failed to load walk texture")
 
-	assets_register_clip(
+	engine.assets_register_clip(
 		&a,
 		.Idle,
-		clip_idle_from_walk_grid(
+		engine.clip_idle_from_walk_grid(
 			walk_tex,
-			WALK_DIRECTIONS,
-			WALK_FRAMES_PER_DIRECTION,
-			CONFIG.idle_frame_duration,
+			engine.WALK_DIRECTIONS,
+			engine.WALK_FRAMES_PER_DIRECTION,
+			config.CONFIG.idle_frame_duration,
 		),
 	)
-	assets_register_clip(
+	engine.assets_register_clip(
 		&a,
 		.Walk,
-		clip_from_directional_grid(
+		engine.clip_from_directional_grid(
 			walk_tex,
-			WALK_DIRECTIONS,
-			WALK_FRAMES_PER_DIRECTION,
-			CONFIG.walk_frame_duration,
+			engine.WALK_DIRECTIONS,
+			engine.WALK_FRAMES_PER_DIRECTION,
+			config.CONFIG.walk_frame_duration,
 		),
 	)
 
-	w: World
-	world_init(&w)
-	defer world_destroy(&w)
+	w: engine.World
+	engine.world_init(&w)
+	defer engine.world_destroy(&w)
 
-	input: InputState
+	input: engine.InputState
 
 	spawn_player(&w, &a, {100, 100})
 
-	raylib.SetTargetFPS(CONFIG.target_fps)
+	raylib.SetTargetFPS(config.CONFIG.target_fps)
 
 	for !raylib.WindowShouldClose() {
-		input_update(&input)
+		engine.input_update(&input)
 
 		dt := raylib.GetFrameTime()
 
 		accumulator += dt
 
-		for ; accumulator >= CONFIG.fixed_timestep; accumulator -= CONFIG.fixed_timestep {
-			fixed_update(&w, &a, &input, CONFIG.fixed_timestep)
+		for ; accumulator >= config.CONFIG.fixed_timestep;
+		    accumulator -= config.CONFIG.fixed_timestep {
+			fixed_update(&w, &a, &input, config.CONFIG.fixed_timestep)
 		}
 
 		raylib.BeginDrawing()
@@ -93,4 +96,3 @@ main :: proc() {
 		raylib.EndDrawing()
 	}
 }
-

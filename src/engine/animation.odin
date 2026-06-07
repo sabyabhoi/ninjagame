@@ -1,6 +1,5 @@
-package main
+package engine
 
-import "core:math"
 import "vendor:raylib"
 
 // Sprite-sheet animation data: frame rects, timing, and directional layout.
@@ -16,14 +15,6 @@ AnimationClip :: struct {
 AnimationKind :: enum {
 	Idle,
 	Walk,
-}
-
-// Per-entity playback state for the currently active animation clip.
-AnimationState :: struct {
-	kind:        AnimationKind, // Which clip (idle, walk, etc.) is playing.
-	frame_index: int, // Current frame within the active direction column.
-	column:      int, // Facing direction index into the clip's grid.
-	timer:       f32, // Elapsed time toward advancing to the next frame.
 }
 
 WALK_COL_DOWN :: 0
@@ -154,66 +145,3 @@ animation_apply_initial_frame :: proc(w: ^World, a: ^Assets, entity: Entity) {
 	clip := &a.clips[state.kind]
 	animation_apply_sprite_frame(sprite, state, clip)
 }
-
-// Advances animation timers and applies the resulting frame to each animated sprite.
-animation_system :: proc(w: ^World, a: ^Assets, dt: f32) {
-	for entity, &state in w.animations {
-		sprite, sprite_ok := get_sprite(w, entity)
-		if !sprite_ok do continue
-
-		clip := &a.clips[state.kind]
-		if len(clip.frames) == 0 do continue
-
-		state.timer += dt
-		for state.timer >= clip.duration {
-			state.timer -= clip.duration
-			state.frame_index = (state.frame_index + 1) % clip.frames_per_direction
-		}
-
-		animation_apply_sprite_frame(sprite, &state, clip)
-	}
-}
-
-// Chooses walk/idle animation kind and facing direction from the player's velocity.
-player_animation_system :: proc(w: ^World) {
-	for entity in w.player_controlled {
-		state, state_ok := get_animation(w, entity)
-		if !state_ok do continue
-
-		vel, vel_ok := get_velocity(w, entity)
-		if !vel_ok do continue
-
-		prev_kind := state.kind
-		prev_column := state.column
-
-		moving := vel.value.x != 0 || vel.value.y != 0
-		if moving {
-			state.kind = .Walk
-
-			abs_x := math.abs(vel.value.x)
-			abs_y := math.abs(vel.value.y)
-
-			if abs_x >= abs_y {
-				if vel.value.x < 0 {
-					state.column = WALK_COL_LEFT
-				} else {
-					state.column = WALK_COL_RIGHT
-				}
-			} else {
-				if vel.value.y < 0 {
-					state.column = WALK_COL_UP
-				} else {
-					state.column = WALK_COL_DOWN
-				}
-			}
-		} else {
-			state.kind = .Idle
-		}
-
-		if state.kind != prev_kind || state.column != prev_column {
-			state.frame_index = 0
-			state.timer = 0
-		}
-	}
-}
-

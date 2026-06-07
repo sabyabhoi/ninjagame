@@ -1,0 +1,63 @@
+package main
+
+import "core:math"
+import "config"
+import "engine"
+
+// Translates held movement actions into velocity for player-controlled entities.
+player_input_system :: proc(w: ^engine.World, input: ^engine.InputState) {
+	for entity in w.player_controlled {
+		vel, ok := engine.get_velocity(w, entity)
+		if !ok do continue
+
+		vel.value = {0, 0}
+
+		if .MoveLeft in input.held do vel.value.x -= config.CONFIG.player_speed
+		if .MoveRight in input.held do vel.value.x += config.CONFIG.player_speed
+		if .MoveUp in input.held do vel.value.y -= config.CONFIG.player_speed
+		if .MoveDown in input.held do vel.value.y += config.CONFIG.player_speed
+	}
+}
+
+// Chooses walk/idle animation kind and facing direction from the player's velocity.
+player_animation_system :: proc(w: ^engine.World) {
+	for entity in w.player_controlled {
+		state, state_ok := engine.get_animation(w, entity)
+		if !state_ok do continue
+
+		vel, vel_ok := engine.get_velocity(w, entity)
+		if !vel_ok do continue
+
+		prev_kind := state.kind
+		prev_column := state.column
+
+		moving := vel.value.x != 0 || vel.value.y != 0
+		if moving {
+			state.kind = .Walk
+
+			abs_x := math.abs(vel.value.x)
+			abs_y := math.abs(vel.value.y)
+
+			if abs_x >= abs_y {
+				if vel.value.x < 0 {
+					state.column = engine.WALK_COL_LEFT
+				} else {
+					state.column = engine.WALK_COL_RIGHT
+				}
+			} else {
+				if vel.value.y < 0 {
+					state.column = engine.WALK_COL_UP
+				} else {
+					state.column = engine.WALK_COL_DOWN
+				}
+			}
+		} else {
+			state.kind = .Idle
+		}
+
+		if state.kind != prev_kind || state.column != prev_column {
+			state.frame_index = 0
+			state.timer = 0
+		}
+	}
+}

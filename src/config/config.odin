@@ -1,4 +1,4 @@
-package main
+package config
 
 // File paths for game assets loaded at startup.
 AssetPaths :: struct {
@@ -37,4 +37,3 @@ CONFIG :: Config {
 	fixed_timestep      = 1.0 / 60.0,
 	target_fps          = 60,
 }
-

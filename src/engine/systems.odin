@@ -1,0 +1,75 @@
+package engine
+
+import "core:slice"
+import "vendor:raylib"
+
+// Advances each entity's position by its velocity scaled by the timestep.
+physics_system :: proc(w: ^World, dt: f32) {
+	for entity, &vel in w.velocities {
+		t, ok := get_transform(w, entity)
+		if !ok do continue
+		t.position += vel.value * dt
+	}
+}
+
+// Temporary render entry used to depth-sort sprites before drawing.
+Drawable :: struct {
+	entity: Entity, // Entity whose sprite should be drawn.
+	sort_y: f32, // Y position used for back-to-front ordering.
+}
+
+// Draws all sprites sorted back-to-front by their y position for depth ordering.
+render_system :: proc(w: ^World) {
+	drawables: [dynamic]Drawable
+	defer delete(drawables)
+
+	for entity in w.sprites {
+		t, ok := get_transform(w, entity)
+		if !ok do continue
+
+		append(&drawables, Drawable{entity = entity, sort_y = t.position.y})
+	}
+
+	slice.stable_sort_by(drawables[:], proc(a, b: Drawable) -> bool {
+		return a.sort_y < b.sort_y
+	})
+
+	for drawable in drawables {
+		sprite, sprite_ok := get_sprite(w, drawable.entity)
+		t, transform_ok := get_transform(w, drawable.entity)
+		if !sprite_ok || !transform_ok do continue
+
+		src := sprite.source
+		if src.width == 0 {
+			src = {0, 0, f32(sprite.texture.width), f32(sprite.texture.height)}
+		}
+
+		dest := raylib.Rectangle {
+			x      = t.position.x,
+			y      = t.position.y,
+			width  = src.width * t.scale.x,
+			height = src.height * t.scale.y,
+		}
+
+		raylib.DrawTexturePro(sprite.texture, src, dest, {0, 0}, 0, sprite.tint)
+	}
+}
+
+// Advances animation timers and applies the resulting frame to each animated sprite.
+animation_system :: proc(w: ^World, a: ^Assets, dt: f32) {
+	for entity, &state in w.animations {
+		sprite, sprite_ok := get_sprite(w, entity)
+		if !sprite_ok do continue
+
+		clip := &a.clips[state.kind]
+		if len(clip.frames) == 0 do continue
+
+		state.timer += dt
+		for state.timer >= clip.duration {
+			state.timer -= clip.duration
+			state.frame_index = (state.frame_index + 1) % clip.frames_per_direction
+		}
+
+		animation_apply_sprite_frame(sprite, &state, clip)
+	}
+}

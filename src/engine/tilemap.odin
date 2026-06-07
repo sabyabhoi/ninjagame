@@ -1,9 +1,9 @@
-package main
-import "core:encoding/csv"
-import "core:path/filepath"
+package engine
 
+import "core:encoding/csv"
 import "core:encoding/xml"
 import "core:fmt"
+import "core:path/filepath"
 import "core:strconv"
 import "core:strings"
 import "vendor:raylib"
@@ -13,7 +13,7 @@ Tilemap :: struct {
 	map_height:  u64,
 	tile_width:  u64,
 	tile_height: u64,
-	data:        [dynamic][dynamic]u64,
+	data:        [][]u64,
 	tileset:     Tileset,
 }
 
@@ -150,7 +150,7 @@ parse_csv :: proc(raw_data: string, rows, cols: u64) -> (result_arr: [][]u64, ok
 		row_idx += 1
 	}
 
-	return nil, true
+	return result, true
 }
 
 load_world :: proc(a: ^Assets, tilemap: ^Tilemap, filepath: string) -> bool {
@@ -186,6 +186,7 @@ load_world :: proc(a: ^Assets, tilemap: ^Tilemap, filepath: string) -> bool {
 	tileset: Tileset
 	ok = load_tileset(a, &tileset, resolve_relative(filepath, tileset_filepath))
 	if !ok do return false
+	tilemap.tileset = tileset
 
 	layer_id, layer_ok := xml.find_child_by_ident(doc, 0, "layer")
 	if !layer_ok do return false
@@ -196,11 +197,12 @@ load_world :: proc(a: ^Assets, tilemap: ^Tilemap, filepath: string) -> bool {
 	raw_csv_data := doc.elements[data_id].value
 	switch value in raw_csv_data[0] {
 	case string:
-		parse_csv(value)
+		data, data_ok := parse_csv(value, tilemap.map_height, tilemap.map_width)
+		if !data_ok do return false
+		tilemap.data = data
 	case u32:
 		panic("Expected string")
 	}
 
 	return true
 }
-

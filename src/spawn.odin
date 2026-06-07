@@ -1,20 +1,28 @@
 package main
 
+import "config"
+import "engine"
 import "vendor:raylib"
 
 // Creates the player entity with transform, velocity, sprite, animation, and input components.
-spawn_player :: proc(w: ^World, a: ^Assets, position: raylib.Vector2) -> Entity {
-	player := entity_create(w)
-	add_transform(
+spawn_player :: proc(w: ^engine.World, a: ^engine.Assets, position: raylib.Vector2) -> engine.Entity {
+	player := engine.entity_create(w)
+	engine.add_transform(
 		w,
 		player,
-		Transform{position = position, scale = {CONFIG.player_scale, CONFIG.player_scale}},
+		engine.Transform {
+			position = position,
+			scale = {config.CONFIG.player_scale, config.CONFIG.player_scale},
+		},
 	)
-	add_velocity(w, player, Velocity{})
-	add_sprite(w, player, Sprite{texture = a.clips[.Idle].texture, tint = raylib.WHITE})
-	add_animation(w, player, AnimationState{kind = .Idle})
-	add_player_controlled(w, player)
-	animation_apply_initial_frame(w, a, player)
+	engine.add_velocity(w, player, engine.Velocity{})
+	engine.add_sprite(
+		w,
+		player,
+		engine.Sprite{texture = a.clips[.Idle].texture, tint = raylib.WHITE},
+	)
+	engine.add_animation(w, player, engine.AnimationState{kind = .Idle})
+	engine.add_player_controlled(w, player)
+	engine.animation_apply_initial_frame(w, a, player)
 	return player
 }
-
