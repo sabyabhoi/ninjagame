@@ -1,8 +1,9 @@
 package main
+import "core:encoding/csv"
+import "core:path/filepath"
 
 import "core:encoding/xml"
 import "core:fmt"
-import "core:path/filepath"
 import "core:strconv"
 import "core:strings"
 import "vendor:raylib"
@@ -13,6 +14,7 @@ Tilemap :: struct {
 	tile_width:  u64,
 	tile_height: u64,
 	data:        [dynamic][dynamic]u64,
+	tileset:     Tileset,
 }
 
 Tileset :: struct {
@@ -23,10 +25,34 @@ Tileset :: struct {
 	columns:     u64,
 }
 
-// Joins a path relative to the directory containing base_file.
-resolve_relative_path :: proc(base_file: string, relative: string) -> string {
-	dir := filepath.dir(base_file, context.temp_allocator)
-	return filepath.join({dir, relative}, context.temp_allocator)
+resolve_relative :: proc(base_path, filename: string) -> string {
+	dir := filepath.dir(base_path) // "res/map"
+	s, err := filepath.join({dir, filename}) // "res/map/TilesetFloor.tsx"
+	if err != .None {
+		fmt.eprintln("Failed to resolve filepaths")
+		return ""
+	}
+	return s
+}
+
+get_tile_rect :: proc {
+	get_tile_rect_from_index,
+	get_tile_rect_from_row_cols,
+}
+
+get_tile_rect_from_index :: proc(tileset: ^Tileset, index: u64) -> raylib.Rectangle {
+	row := index / tileset.columns
+	col := index - row * tileset.columns
+	return get_tile_rect_from_row_cols(tileset, row, col)
+}
+
+get_tile_rect_from_row_cols :: proc(tileset: ^Tileset, row, col: u64) -> raylib.Rectangle {
+	return raylib.Rectangle {
+		x = f32(tileset.tile_width * col),
+		y = f32(tileset.tile_height * row),
+		width = f32(tileset.tile_width),
+		height = f32(tileset.tile_height),
+	}
 }
 
 fetch_attribute_u64 :: proc(doc: ^xml.Document, element_id: u32, key: string) -> (u64, bool) {
@@ -36,76 +62,6 @@ fetch_attribute_u64 :: proc(doc: ^xml.Document, element_id: u32, key: string) ->
 	}
 
 	return strconv.parse_u64(value)
-}
-
-fetch_attribute_string :: proc(doc: ^xml.Document, element_id: u32, key: string) -> (string, bool) {
-	return xml.find_attribute_val_by_key(doc, element_id, key)
-}
-
-element_text :: proc(doc: ^xml.Document, element_id: u32) -> (string, bool) {
-	if element_id >= doc.element_count {
-		return "", false
-	}
-
-	element := doc.elements[element_id]
-	text: strings.Builder
-	strings.builder_init(&text, context.temp_allocator)
-
-	for val in element.value {
-		if part, ok := val.(string); ok {
-			strings.write_string(&text, part)
-		}
-	}
-
-	result := strings.to_string(text)
-	if len(result) == 0 {
-		return "", false
-	}
-
-	return result, true
-}
-
-parse_csv_tile_data :: proc(
-	data: string,
-	firstgid: u32,
-	width: u32,
-	height: u32,
-	tilemap: ^Tilemap,
-) -> bool {
-	resize(&tilemap.data, int(height))
-	for row in 0 ..< int(height) {
-		tilemap.data[row] = make([dynamic]u32, int(width))
-	}
-
-	row: u32 = 0
-	col: u32 = 0
-
-	csv := data
-	for part in strings.split_iterator(&csv, ",") {
-		trimmed := strings.trim_space(part)
-		if len(trimmed) == 0 do continue
-
-		gid, ok := strconv.parse_u32(trimmed)
-		if !ok do return false
-
-		local_id: u32 = 0
-		if gid != 0 {
-			if gid < firstgid do return false
-			local_id = gid - firstgid
-		}
-
-		if row < height && col < width {
-			tilemap.data[row][col] = local_id
-		}
-
-		col += 1
-		if col >= width {
-			col = 0
-			row += 1
-		}
-	}
-
-	return true
 }
 
 load_tileset :: proc(a: ^Assets, tileset: ^Tileset, filepath: string) -> bool {
@@ -135,13 +91,12 @@ load_tileset :: proc(a: ^Assets, tileset: ^Tileset, filepath: string) -> bool {
 	image_id, image_found := xml.find_child_by_ident(doc, 0, "image")
 	if !image_found do return false
 
-	image_source, source_found := fetch_attribute_string(doc, image_id, "source")
+	image_source, source_found := xml.find_attribute_val_by_key(doc, image_id, "source")
 	if !source_found do return false
 
-	image_path := resolve_relative_path(filepath, image_source)
-	tex, tex_ok := assets_load_texture(a, image_path)
+	tex, tex_ok := assets_load_texture(a, strings.concatenate({"res/", image_source}))
 	if !tex_ok {
-		fmt.eprintf("Failed to load tileset texture: %s\n", image_path)
+		fmt.eprintf("Failed to load tileset texture: %s\n", image_source)
 		return false
 	}
 
@@ -149,50 +104,103 @@ load_tileset :: proc(a: ^Assets, tileset: ^Tileset, filepath: string) -> bool {
 	return true
 }
 
-load_world :: proc(a: ^Assets, tilemap: ^Tilemap, tileset: ^Tileset, filepath: string) -> bool {
+parse_csv :: proc(raw_data: string, rows, cols: u64) -> (result_arr: [][]u64, ok: bool) {
+	result := make([][]u64, rows)
+	defer if !ok {
+		for row in result {
+			delete(row)
+		}
+		delete(result)
+		result = nil
+	}
+
+	for i in 0 ..< rows {
+		result[i] = make([]u64, cols)
+	}
+
+	r: csv.Reader
+	r.trim_leading_space = true
+	r.reuse_record = true
+	r.reuse_record_buffer = true
+	r.fields_per_record = int(cols)
+	defer csv.reader_destroy(&r)
+
+	csv.reader_init_with_string(&r, raw_data)
+
+	row_idx := 0
+	for record, idx in csv.iterator_next(&r) {
+		if u64(row_idx) >= rows {
+			fmt.eprintfln("Warning: More rows (%d) than expected (%d)", idx + 1, rows)
+			break
+		}
+
+		if u64(len(record)) != cols {
+			fmt.eprintfln("Row %d has %d columns, expected %d", idx, len(record), cols)
+			return nil, false
+		}
+		// Convert each field
+		for field, col_idx in record {
+			value, ok := strconv.parse_u64(field)
+			if !ok {
+				fmt.eprintfln("Failed to convert at [%d,%d]: %q", row_idx, col_idx, field)
+				return nil, false
+			}
+			result[row_idx][col_idx] = value
+		}
+		row_idx += 1
+	}
+
+	return nil, true
+}
+
+load_world :: proc(a: ^Assets, tilemap: ^Tilemap, filepath: string) -> bool {
 	doc, err := xml.load_from_file(filepath)
 	if err != .None {
-		fmt.eprintln("Failed to parse map XML:", err)
+		fmt.eprintln("Failed to parse tilemap XML:", err)
 		return false
 	}
 	defer xml.destroy(doc)
 
-	width, width_ok := fetch_attribute_u64(doc, 0, "width")
-	if !width_ok do return false
-	tilemap.map_width = width
+	value, found := fetch_attribute_u64(doc, 0, "width")
+	if !found do return false
+	tilemap.map_width = value
 
-	height, height_ok := fetch_attribute_u64(doc, 0, "height")
-	if !height_ok do return false
-	tilemap.map_height = height
+	value, found = fetch_attribute_u64(doc, 0, "height")
+	if !found do return false
+	tilemap.map_height = value
 
-	tile_width, tile_width_ok := fetch_attribute_u64(doc, 0, "tilewidth")
-	if !tile_width_ok do return false
-	tilemap.tile_width = tile_width
+	value, found = fetch_attribute_u64(doc, 0, "tilewidth")
+	if !found do return false
+	tilemap.tile_width = value
 
-	tile_height, tile_height_ok := fetch_attribute_u64(doc, 0, "tileheight")
-	if !tile_height_ok do return false
-	tilemap.tile_height = tile_height
+	value, found = fetch_attribute_u64(doc, 0, "tileheight")
+	if !found do return false
+	tilemap.tile_height = value
 
-	tileset_id, tileset_found := xml.find_child_by_ident(doc, 0, "tileset")
-	if !tileset_found do return false
+	tileset_id, ok := xml.find_child_by_ident(doc, 0, "tileset")
+	if !ok do return false
 
-	firstgid, firstgid_ok := fetch_attribute_u64(doc, tileset_id, "firstgid")
-	if !firstgid_ok do return false
+	tileset_filepath, tileset_ok := xml.find_attribute_val_by_key(doc, tileset_id, "source")
+	if !tileset_ok do return false
 
-	tileset_source, tileset_source_ok := fetch_attribute_string(doc, tileset_id, "source")
-	if !tileset_source_ok do return false
+	tileset: Tileset
+	ok = load_tileset(a, &tileset, resolve_relative(filepath, tileset_filepath))
+	if !ok do return false
 
-	tileset_path := resolve_relative_path(filepath, tileset_source)
-	if !load_tileset(a, tileset, tileset_path) do return false
+	layer_id, layer_ok := xml.find_child_by_ident(doc, 0, "layer")
+	if !layer_ok do return false
 
-	layer_id, layer_found := xml.find_child_by_ident(doc, 0, "layer")
-	if !layer_found do return false
+	data_id, data_ok := xml.find_child_by_ident(doc, layer_id, "data")
+	if !data_ok do return false
 
-	data_id, data_found := xml.find_child_by_ident(doc, layer_id, "data")
-	if !data_found do return false
+	raw_csv_data := doc.elements[data_id].value
+	switch value in raw_csv_data[0] {
+	case string:
+		parse_csv(value)
+	case u32:
+		panic("Expected string")
+	}
 
-	csv_data, csv_ok := element_text(doc, data_id)
-	if !csv_ok do return false
-
-	return parse_csv_tile_data(csv_data, firstgid, width, height, tilemap)
+	return true
 }
+

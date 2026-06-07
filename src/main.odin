@@ -33,16 +33,15 @@ main :: proc() {
 	assets_init(&a)
 	defer assets_destroy(&a)
 
-	tileset: Tileset
-	if !load_tileset(&a, &tileset, ASSET_PATHS.tileset) {
-		panic("Failed to load tileset")
-	}
+	// tileset: Tileset
+	// if !load_tileset(&a, &tileset, ASSET_PATHS.tileset) {
+	// 	panic("Failed to load tileset")
+	// }
 
 	tilemap: Tilemap
-	if !load_world(&a, &tilemap, &tileset, ASSET_PATHS.map) {
+	if !load_world(&a, &tilemap, ASSET_PATHS.tilemap) {
 		panic("Failed to load world")
 	}
-	_ = tilemap
 
 	walk_tex, walk_ok := assets_load_texture(&a, ASSET_PATHS.walk)
 	if !walk_ok do panic("Failed to load walk texture")
