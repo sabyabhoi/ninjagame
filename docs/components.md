@@ -1,0 +1,87 @@
+# Components
+
+Components are pure data attached to an entity. An entity gains a capability by
+having the matching component, and loses it by having it removed. None of these
+structs contain logic.
+
+## Transform (`world.odin`)
+
+Where and how big an entity is.
+
+```odin
+Transform :: struct {
+    position: raylib.Vector2,  // x, y in the world
+    scale:    raylib.Vector2,  // size multiplier (player uses 4x)
+}
+```
+
+## Velocity (`world.odin`)
+
+How fast and in what direction an entity moves, in pixels per second. The
+physics system adds `velocity * dt` to the position each step.
+
+```odin
+Velocity :: struct {
+    value: raylib.Vector2,
+}
+```
+
+## Sprite (`world.odin`)
+
+What to draw. `source` is the rectangle inside the texture (a single frame of a
+sprite sheet). If `source.width` is 0, the whole texture is drawn.
+
+```odin
+Sprite :: struct {
+    texture: raylib.Texture2D,
+    source:  raylib.Rectangle,  // which part of the texture to show
+    tint:    raylib.Color,      // color multiply (usually WHITE = unchanged)
+}
+```
+
+## AnimationState (`animation.odin`)
+
+The "playhead" for an animation: which clip is playing, which frame, which
+direction column, and a timer that drives frame advances. See
+[animation.md](animation.md) for the details.
+
+```odin
+AnimationState :: struct {
+    kind:        AnimationKind,  // .Idle or .Walk
+    frame_index: int,            // current frame within the direction
+    column:      int,            // facing direction (down/left/right/up)
+    timer:       f32,            // time accumulated toward the next frame
+}
+```
+
+## PlayerControlled (`world.odin`)
+
+A **tag** component. It holds no data; its mere presence marks an entity as
+driven by the keyboard. The input and player-animation systems only touch
+entities that have it.
+
+```odin
+PlayerControlled :: struct {}  // empty on purpose
+```
+
+## How the player is assembled (`spawn.odin`)
+
+The player is not a special type. It is just an entity given the right set of
+components:
+
+```odin
+spawn_player :: proc(w: ^World, a: ^Assets, position: raylib.Vector2) -> Entity {
+    player := entity_create(w)
+    add_transform(w, player, Transform{position = position, scale = {4, 4}})
+    add_velocity(w, player, Velocity{})
+    add_sprite(w, player, Sprite{texture = a.clips[.Idle].texture, tint = WHITE})
+    add_animation(w, player, AnimationState{kind = .Idle})
+    add_player_controlled(w, player)
+    animation_apply_initial_frame(w, a, player)
+    return player
+}
+```
+
+To create a non-player character (say an enemy that moves but isn't keyboard
+controlled), you would give it `Transform`, `Velocity`, `Sprite`, and
+`AnimationState`, but **not** `PlayerControlled`.

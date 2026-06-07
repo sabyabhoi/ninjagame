@@ -2,6 +2,8 @@
 
 Simple top-down game built with [Odin](https://odin-lang.org/) and [Raylib](https://www.raylib.com/).
 
+See [`docs/`](docs/README.md) for an explanation of the architecture.
+
 ## Prerequisites
 
 Asset sprites live under `assets/` (e.g. `assets/Actor/Character/Boy/SeparateAnim/Idle.png`). Run the game from the project root so those paths resolve.
