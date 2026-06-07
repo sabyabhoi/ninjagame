@@ -72,35 +72,16 @@ load_tileset :: proc(a: ^Assets, tileset: ^Tileset, filepath: string) -> bool {
 	}
 	defer xml.destroy(doc)
 
-	value, found := fetch_attribute_u64(doc, 0, "tilewidth")
-	if !found do return false
-	tileset.tile_width = value
+	tileset.tile_width = fetch_attribute_u64(doc, 0, "tilewidth") or_return
+	tileset.tile_height = fetch_attribute_u64(doc, 0, "tileheight") or_return
+	tileset.tile_count = fetch_attribute_u64(doc, 0, "tilecount") or_return
+	tileset.columns = fetch_attribute_u64(doc, 0, "columns") or_return
 
-	value, found = fetch_attribute_u64(doc, 0, "tileheight")
-	if !found do return false
-	tileset.tile_height = value
+	image_id := xml.find_child_by_ident(doc, 0, "image") or_return
+	image_source := xml.find_attribute_val_by_key(doc, image_id, "source") or_return
 
-	value, found = fetch_attribute_u64(doc, 0, "tilecount")
-	if !found do return false
-	tileset.tile_count = value
+	tileset.texture = assets_load_texture(a, strings.concatenate({"res/", image_source})) or_return
 
-	value, found = fetch_attribute_u64(doc, 0, "columns")
-	if !found do return false
-	tileset.columns = value
-
-	image_id, image_found := xml.find_child_by_ident(doc, 0, "image")
-	if !image_found do return false
-
-	image_source, source_found := xml.find_attribute_val_by_key(doc, image_id, "source")
-	if !source_found do return false
-
-	tex, tex_ok := assets_load_texture(a, strings.concatenate({"res/", image_source}))
-	if !tex_ok {
-		fmt.eprintf("Failed to load tileset texture: %s\n", image_source)
-		return false
-	}
-
-	tileset.texture = tex
 	return true
 }
 
@@ -161,45 +142,27 @@ load_world :: proc(a: ^Assets, tilemap: ^Tilemap, filepath: string) -> bool {
 	}
 	defer xml.destroy(doc)
 
-	value, found := fetch_attribute_u64(doc, 0, "width")
-	if !found do return false
-	tilemap.map_width = value
+	tilemap.map_width = fetch_attribute_u64(doc, 0, "width") or_return
+	tilemap.map_height = fetch_attribute_u64(doc, 0, "height") or_return
+	tilemap.tile_width = fetch_attribute_u64(doc, 0, "tilewidth") or_return
+	tilemap.tile_height = fetch_attribute_u64(doc, 0, "tileheight") or_return
 
-	value, found = fetch_attribute_u64(doc, 0, "height")
-	if !found do return false
-	tilemap.map_height = value
+	tileset_id := xml.find_child_by_ident(doc, 0, "tileset") or_return
 
-	value, found = fetch_attribute_u64(doc, 0, "tilewidth")
-	if !found do return false
-	tilemap.tile_width = value
-
-	value, found = fetch_attribute_u64(doc, 0, "tileheight")
-	if !found do return false
-	tilemap.tile_height = value
-
-	tileset_id, ok := xml.find_child_by_ident(doc, 0, "tileset")
-	if !ok do return false
-
-	tileset_filepath, tileset_ok := xml.find_attribute_val_by_key(doc, tileset_id, "source")
-	if !tileset_ok do return false
+	tileset_filepath := xml.find_attribute_val_by_key(doc, tileset_id, "source") or_return
 
 	tileset: Tileset
-	ok = load_tileset(a, &tileset, resolve_relative(filepath, tileset_filepath))
-	if !ok do return false
+	load_tileset(a, &tileset, resolve_relative(filepath, tileset_filepath)) or_return
+
 	tilemap.tileset = tileset
 
-	layer_id, layer_ok := xml.find_child_by_ident(doc, 0, "layer")
-	if !layer_ok do return false
-
-	data_id, data_ok := xml.find_child_by_ident(doc, layer_id, "data")
-	if !data_ok do return false
+	layer_id := xml.find_child_by_ident(doc, 0, "layer") or_return
+	data_id := xml.find_child_by_ident(doc, layer_id, "data") or_return
 
 	raw_csv_data := doc.elements[data_id].value
 	switch value in raw_csv_data[0] {
 	case string:
-		data, data_ok := parse_csv(value, tilemap.map_height, tilemap.map_width)
-		if !data_ok do return false
-		tilemap.data = data
+		tilemap.data = parse_csv(value, tilemap.map_height, tilemap.map_width) or_return
 	case u32:
 		panic("Expected string")
 	}
