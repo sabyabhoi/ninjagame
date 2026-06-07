@@ -65,7 +65,7 @@ get_tile_rect :: proc {
 
 get_tile_rect_from_index :: proc(tileset: ^Tileset, index: u64) -> raylib.Rectangle {
 	row := index / tileset.columns
-	col := index - row * tileset.columns
+	col := index - row * tileset.columns - 1
 	return get_tile_rect_from_row_cols(tileset, row, col)
 }
 
