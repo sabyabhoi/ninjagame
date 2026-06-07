@@ -9,12 +9,13 @@ import "core:strings"
 import "vendor:raylib"
 
 Tilemap :: struct {
-	map_width:   u64,
-	map_height:  u64,
+	num_cols:    u64,
+	num_rows:    u64,
 	tile_width:  u64,
 	tile_height: u64,
 	data:        [][]u64,
 	tileset:     Tileset,
+	transform:   Transform,
 }
 
 Tileset :: struct {
@@ -23,6 +24,28 @@ Tileset :: struct {
 	tile_height: u64,
 	tile_count:  u64,
 	columns:     u64,
+}
+
+render_tilemap :: proc(tilemap: ^Tilemap) {
+	for row in 0 ..< tilemap.num_rows {
+		for col in 0 ..< tilemap.num_cols {
+			src_rect := get_tile_rect_from_index(&tilemap.tileset, tilemap.data[row][col])
+			dest_rect := raylib.Rectangle {
+				x      = f32(col * tilemap.tile_width) * tilemap.transform.scale.x,
+				y      = f32(row * tilemap.tile_height) * tilemap.transform.scale.y,
+				width  = f32(tilemap.tile_width) * tilemap.transform.scale.x,
+				height = f32(tilemap.tile_height) * tilemap.transform.scale.y,
+			}
+			raylib.DrawTexturePro(
+				tilemap.tileset.texture,
+				src_rect,
+				dest_rect,
+				{0, 0},
+				0,
+				raylib.WHITE,
+			)
+		}
+	}
 }
 
 resolve_relative :: proc(base_path, filename: string) -> string {
@@ -142,10 +165,12 @@ load_world :: proc(a: ^Assets, tilemap: ^Tilemap, filepath: string) -> bool {
 	}
 	defer xml.destroy(doc)
 
-	tilemap.map_width = fetch_attribute_u64(doc, 0, "width") or_return
-	tilemap.map_height = fetch_attribute_u64(doc, 0, "height") or_return
+	tilemap.num_cols = fetch_attribute_u64(doc, 0, "width") or_return
+	tilemap.num_rows = fetch_attribute_u64(doc, 0, "height") or_return
 	tilemap.tile_width = fetch_attribute_u64(doc, 0, "tilewidth") or_return
 	tilemap.tile_height = fetch_attribute_u64(doc, 0, "tileheight") or_return
+	tilemap.transform.position = {0, 0}
+	tilemap.transform.scale = {4.0, 4.0}
 
 	tileset_id := xml.find_child_by_ident(doc, 0, "tileset") or_return
 
@@ -162,7 +187,7 @@ load_world :: proc(a: ^Assets, tilemap: ^Tilemap, filepath: string) -> bool {
 	raw_csv_data := doc.elements[data_id].value
 	switch value in raw_csv_data[0] {
 	case string:
-		tilemap.data = parse_csv(value, tilemap.map_height, tilemap.map_width) or_return
+		tilemap.data = parse_csv(value, tilemap.num_rows, tilemap.num_cols) or_return
 	case u32:
 		panic("Expected string")
 	}

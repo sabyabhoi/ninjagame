@@ -92,6 +92,7 @@ main :: proc() {
 		}
 
 		raylib.BeginDrawing()
+		engine.render_tilemap(&tilemap)
 		draw(&w)
 		raylib.EndDrawing()
 	}
