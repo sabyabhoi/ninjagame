@@ -28,15 +28,12 @@ key_bindings := [Action]raylib.KeyboardKey {
 
 input_update :: proc(input: ^InputState) {
 	input.pressed = {}
+	input.held = {}
 	input.released = {}
 
 	for key, action in key_bindings {
 		if raylib.IsKeyPressed(key) do input.pressed += {action}
 		if raylib.IsKeyDown(key) do input.held += {action}
-		if raylib.IsKeyReleased(key) {
-			input.released += {action}
-			input.held -= {action}
-		}
+		if raylib.IsKeyReleased(key) do input.released += {action}
 	}
 }
-
