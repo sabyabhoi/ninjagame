@@ -1,5 +1,6 @@
 package main
 
+import "core:fmt"
 import "core:strings"
 import "vendor:raylib"
 
@@ -23,15 +24,19 @@ assets_destroy :: proc(a: ^Assets) {
 	delete(a.textures)
 }
 
-assets_load_texture :: proc(a: ^Assets, path: string) -> raylib.Texture2D {
+assets_load_texture :: proc(a: ^Assets, path: string) -> (raylib.Texture2D, bool) {
 	if tex, ok := a.textures[path]; ok {
-		return tex
+		return tex, true
 	}
 
 	tex := raylib.LoadTexture(strings.clone_to_cstring(path, context.temp_allocator))
-	a.textures[path] = tex
+	if tex.id == 0 {
+		fmt.eprintf("Failed to load texture: %s\n", path)
+		return {}, false
+	}
 
-	return tex
+	a.textures[path] = tex
+	return tex, true
 }
 
 assets_register_clip :: proc(a: ^Assets, kind: AnimationKind, clip: AnimationClip) {

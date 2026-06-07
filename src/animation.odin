@@ -90,6 +90,35 @@ clip_from_directional_grid :: proc(
 	}
 }
 
+animation_frame_index :: proc(state: ^AnimationState, clip: ^AnimationClip) -> int {
+	frame_idx := state.frame_index
+	if clip.directions > 1 {
+		frame_idx = state.column * clip.frames_per_direction + state.frame_index
+	}
+	return frame_idx
+}
+
+animation_apply_sprite_frame :: proc(
+	sprite: ^Sprite,
+	state: ^AnimationState,
+	clip: ^AnimationClip,
+) {
+	if len(clip.frames) == 0 do return
+
+	frame_idx := animation_frame_index(state, clip)
+	sprite.texture = clip.texture
+	sprite.source = clip.frames[frame_idx]
+}
+
+animation_apply_initial_frame :: proc(w: ^World, a: ^Assets, entity: Entity) {
+	state, state_ok := get_animation(w, entity)
+	sprite, sprite_ok := get_sprite(w, entity)
+	if !state_ok || !sprite_ok do return
+
+	clip := &a.clips[state.kind]
+	animation_apply_sprite_frame(sprite, state, clip)
+}
+
 animation_system :: proc(w: ^World, a: ^Assets, dt: f32) {
 	for entity, &state in w.animations {
 		sprite, sprite_ok := get_sprite(w, entity)
@@ -105,13 +134,7 @@ animation_system :: proc(w: ^World, a: ^Assets, dt: f32) {
 				(state.frame_index + 1) % clip.frames_per_direction
 		}
 
-		frame_idx := state.frame_index
-		if clip.directions > 1 {
-			frame_idx = state.column * clip.frames_per_direction + state.frame_index
-		}
-
-		sprite.texture = clip.texture
-		sprite.source = clip.frames[frame_idx]
+		animation_apply_sprite_frame(sprite, &state, clip)
 	}
 }
 

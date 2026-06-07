@@ -116,18 +116,16 @@ physics_system :: proc(w: ^World, dt: f32) {
 }
 
 player_input_system :: proc(w: ^World, input: ^InputState) {
-	SPEED :: f32(300)
-
 	for entity in w.player_controlled {
 		vel, ok := get_velocity(w, entity)
 		if !ok do continue
 
 		vel.value = {0, 0}
 
-		if .MoveLeft in input.held do vel.value.x -= SPEED
-		if .MoveRight in input.held do vel.value.x += SPEED
-		if .MoveUp in input.held do vel.value.y -= SPEED
-		if .MoveDown in input.held do vel.value.y += SPEED
+		if .MoveLeft in input.held do vel.value.x -= CONFIG.player_speed
+		if .MoveRight in input.held do vel.value.x += CONFIG.player_speed
+		if .MoveUp in input.held do vel.value.y -= CONFIG.player_speed
+		if .MoveDown in input.held do vel.value.y += CONFIG.player_speed
 	}
 }
 
