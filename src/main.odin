@@ -25,15 +25,18 @@ main :: proc() {
 	assets_init(&a)
 	defer assets_destroy(&a)
 
-	idle_tex, idle_ok := assets_load_texture(&a, ASSET_PATHS.idle)
-	if !idle_ok do panic("Failed to load idle texture")
 	walk_tex, walk_ok := assets_load_texture(&a, ASSET_PATHS.walk)
 	if !walk_ok do panic("Failed to load walk texture")
 
 	assets_register_clip(
 		&a,
 		.Idle,
-		clip_from_horizontal_strip(idle_tex, IDLE_FRAME_COUNT, CONFIG.idle_frame_duration),
+		clip_idle_from_walk_grid(
+			walk_tex,
+			WALK_DIRECTIONS,
+			WALK_FRAMES_PER_DIRECTION,
+			CONFIG.idle_frame_duration,
+		),
 	)
 	assets_register_clip(
 		&a,

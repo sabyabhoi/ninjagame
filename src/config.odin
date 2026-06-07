@@ -1,7 +1,6 @@
 package main
 
 AssetPaths :: struct {
-	idle: string,
 	walk: string,
 }
 
@@ -18,7 +17,6 @@ Config :: struct {
 }
 
 ASSET_PATHS :: AssetPaths {
-	idle = "assets/Actor/Character/Boy/SeparateAnim/Idle.png",
 	walk = "assets/Actor/Character/Boy/SeparateAnim/Walk.png",
 }
 

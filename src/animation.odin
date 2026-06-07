@@ -28,7 +28,6 @@ WALK_COL_LEFT :: 1
 WALK_COL_RIGHT :: 2
 WALK_COL_UP :: 3
 
-IDLE_FRAME_COUNT :: 4
 WALK_DIRECTIONS :: 4
 WALK_FRAMES_PER_DIRECTION :: 4
 
@@ -87,6 +86,29 @@ clip_from_directional_grid :: proc(
 		duration = duration,
 		directions = directions,
 		frames_per_direction = frames_per_direction,
+	}
+}
+
+clip_idle_from_walk_grid :: proc(
+	tex: raylib.Texture2D,
+	directions: int,
+	walk_frames_per_direction: int,
+	duration: f32,
+) -> AnimationClip {
+	frame_w := f32(tex.width) / f32(directions)
+	frame_h := f32(tex.height) / f32(walk_frames_per_direction)
+
+	frames := make([]raylib.Rectangle, directions)
+	for col in 0 ..< directions {
+		frames[col] = {x = f32(col) * frame_w, y = 0, width = frame_w, height = frame_h}
+	}
+
+	return {
+		texture = tex,
+		frames = frames,
+		duration = duration,
+		directions = directions,
+		frames_per_direction = 1,
 	}
 }
 
