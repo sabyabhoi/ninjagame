@@ -2,7 +2,9 @@ package main
 
 // File paths for game assets loaded at startup.
 AssetPaths :: struct {
-	walk: string, // Sprite sheet used for walk and idle animations.
+	walk:    string, // Sprite sheet used for walk and idle animations.
+	tileset: string, // Tiled external tileset (.tsx) referenced by the map.
+	map:     string, // Tiled map file (.tmx).
 }
 
 // Tunable game and engine parameters.
@@ -19,7 +21,9 @@ Config :: struct {
 }
 
 ASSET_PATHS :: AssetPaths {
-	walk = "assets/Actor/CharacterAnimated/NinjaGreen/Separate/Walk.png",
+	walk    = "assets/Actor/CharacterAnimated/NinjaGreen/Separate/Walk.png",
+	tileset = "assets/map/TilesetFloor.tsx",
+	map     = "assets/map/map1.tmx",
 }
 
 CONFIG :: Config {
