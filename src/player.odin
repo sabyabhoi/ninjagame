@@ -1,7 +1,7 @@
 package main
 
-import "core:math"
 import "config"
+import "core:math"
 import "engine"
 
 // Translates held movement actions into velocity for player-controlled entities.
@@ -61,3 +61,4 @@ player_animation_system :: proc(w: ^engine.World) {
 		}
 	}
 }
+

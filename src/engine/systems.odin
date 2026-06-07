@@ -73,3 +73,4 @@ animation_system :: proc(w: ^World, a: ^Assets, dt: f32) {
 		animation_apply_sprite_frame(sprite, &state, clip)
 	}
 }
+

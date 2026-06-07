@@ -5,7 +5,11 @@ import "engine"
 import "vendor:raylib"
 
 // Creates the player entity with transform, velocity, sprite, animation, and input components.
-spawn_player :: proc(w: ^engine.World, a: ^engine.Assets, position: raylib.Vector2) -> engine.Entity {
+spawn_player :: proc(
+	w: ^engine.World,
+	a: ^engine.Assets,
+	position: raylib.Vector2,
+) -> engine.Entity {
 	player := engine.entity_create(w)
 	engine.add_transform(
 		w,
@@ -26,3 +30,4 @@ spawn_player :: proc(w: ^engine.World, a: ^engine.Assets, position: raylib.Vecto
 	engine.animation_apply_initial_frame(w, a, player)
 	return player
 }
+

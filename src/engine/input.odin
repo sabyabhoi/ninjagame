@@ -40,3 +40,4 @@ input_update :: proc(input: ^InputState) {
 		if raylib.IsKeyReleased(key) do input.released += {action}
 	}
 }
+

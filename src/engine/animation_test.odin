@@ -60,3 +60,4 @@ test_animation_frame_index :: proc(t: ^testing.T) {
 	idx := animation_frame_index(&state, &clip)
 	testing.expect(t, idx == 6, "expected frame index 6 for column 1 frame 2")
 }
+

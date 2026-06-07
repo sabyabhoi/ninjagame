@@ -73,3 +73,4 @@ get_animation :: proc(w: ^World, e: Entity) -> (^AnimationState, bool) {
 	}
 	return nil, false
 }
+

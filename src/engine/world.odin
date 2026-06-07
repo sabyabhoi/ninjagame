@@ -56,3 +56,4 @@ entity_destroy :: proc(w: ^World, e: Entity) {
 	delete_key(&w.player_controlled, e)
 	append(&w.free_list, e)
 }
+

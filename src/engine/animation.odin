@@ -145,3 +145,4 @@ animation_apply_initial_frame :: proc(w: ^World, a: ^Assets, entity: Entity) {
 	clip := &a.clips[state.kind]
 	animation_apply_sprite_frame(sprite, state, clip)
 }
+

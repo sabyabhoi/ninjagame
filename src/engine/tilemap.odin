@@ -206,3 +206,4 @@ load_world :: proc(a: ^Assets, tilemap: ^Tilemap, filepath: string) -> bool {
 
 	return true
 }
+

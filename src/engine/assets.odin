@@ -50,3 +50,4 @@ assets_register_clip :: proc(a: ^Assets, kind: AnimationKind, clip: AnimationCli
 	}
 	a.clips[kind] = clip
 }
+
