@@ -26,6 +26,7 @@ key_bindings := [Action]raylib.KeyboardKey {
 	.Attack    = .J,
 }
 
+// Polls the keyboard and refreshes the pressed, held, and released action sets.
 input_update :: proc(input: ^InputState) {
 	input.pressed = {}
 	input.held = {}

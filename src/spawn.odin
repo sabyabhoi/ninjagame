@@ -2,6 +2,7 @@ package main
 
 import "vendor:raylib"
 
+// Creates the player entity with transform, velocity, sprite, animation, and input components.
 spawn_player :: proc(w: ^World, a: ^Assets, position: raylib.Vector2) -> Entity {
 	player := entity_create(w)
 	add_transform(

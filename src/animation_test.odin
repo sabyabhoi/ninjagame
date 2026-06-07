@@ -3,6 +3,7 @@ package main
 import "core:testing"
 import "vendor:raylib"
 
+// Verifies a horizontal strip is split into evenly-sized, non-directional frames.
 @(test)
 test_clip_from_horizontal_strip :: proc(t: ^testing.T) {
 	tex := raylib.Texture2D {
@@ -19,6 +20,7 @@ test_clip_from_horizontal_strip :: proc(t: ^testing.T) {
 	testing.expect(t, clip.frames[1].x == 8, "expected second frame x offset 8")
 }
 
+// Verifies a directional grid produces the expected frame count and per-cell offsets.
 @(test)
 test_clip_from_directional_grid :: proc(t: ^testing.T) {
 	tex := raylib.Texture2D {
@@ -43,6 +45,7 @@ test_clip_from_directional_grid :: proc(t: ^testing.T) {
 	testing.expect(t, clip.frames[idx].y == 12, "expected y for row 3")
 }
 
+// Verifies the flat frame index is computed correctly from column and frame.
 @(test)
 test_animation_frame_index :: proc(t: ^testing.T) {
 	clip := AnimationClip {

@@ -3,6 +3,7 @@ package main
 import "core:strings"
 import "vendor:raylib"
 
+// Runs one fixed-timestep simulation tick: input, animation, and physics systems.
 fixed_update :: proc(w: ^World, a: ^Assets, input: ^InputState, dt: f32) {
 	player_input_system(w, input)
 	player_animation_system(w)
@@ -10,12 +11,14 @@ fixed_update :: proc(w: ^World, a: ^Assets, input: ^InputState, dt: f32) {
 	physics_system(w, dt)
 }
 
+// Clears the screen and renders the current frame.
 draw :: proc(w: ^World) {
 	raylib.ClearBackground(raylib.WHITE)
 
 	render_system(w)
 }
 
+// Entry point: sets up the window, assets, world, and runs the main game loop.
 main :: proc() {
 	accumulator: f32 = 0
 

@@ -31,6 +31,7 @@ WALK_COL_UP :: 1
 WALK_DIRECTIONS :: 4
 WALK_FRAMES_PER_DIRECTION :: 4
 
+// Builds a single-row, non-directional animation clip from a horizontal sprite strip.
 clip_from_horizontal_strip :: proc(
 	tex: raylib.Texture2D,
 	frame_count: int,
@@ -58,6 +59,7 @@ clip_from_horizontal_strip :: proc(
 	}
 }
 
+// Builds a multi-direction animation clip from a grid where columns are directions and rows are frames.
 clip_from_directional_grid :: proc(
 	tex: raylib.Texture2D,
 	directions: int,
@@ -89,6 +91,7 @@ clip_from_directional_grid :: proc(
 	}
 }
 
+// Builds an idle clip by taking the first frame of each direction from a walk grid.
 clip_idle_from_walk_grid :: proc(
 	tex: raylib.Texture2D,
 	directions: int,
@@ -117,6 +120,7 @@ clip_idle_from_walk_grid :: proc(
 	}
 }
 
+// Computes the flat frame array index for the current direction column and frame.
 animation_frame_index :: proc(state: ^AnimationState, clip: ^AnimationClip) -> int {
 	frame_idx := state.frame_index
 	if clip.directions > 1 {
@@ -125,6 +129,7 @@ animation_frame_index :: proc(state: ^AnimationState, clip: ^AnimationClip) -> i
 	return frame_idx
 }
 
+// Updates a sprite's texture and source rect to match the current animation frame.
 animation_apply_sprite_frame :: proc(
 	sprite: ^Sprite,
 	state: ^AnimationState,
@@ -137,6 +142,7 @@ animation_apply_sprite_frame :: proc(
 	sprite.source = clip.frames[frame_idx]
 }
 
+// Sets an entity's sprite to the first frame of its current animation clip.
 animation_apply_initial_frame :: proc(w: ^World, a: ^Assets, entity: Entity) {
 	state, state_ok := get_animation(w, entity)
 	sprite, sprite_ok := get_sprite(w, entity)
@@ -146,6 +152,7 @@ animation_apply_initial_frame :: proc(w: ^World, a: ^Assets, entity: Entity) {
 	animation_apply_sprite_frame(sprite, state, clip)
 }
 
+// Advances animation timers and applies the resulting frame to each animated sprite.
 animation_system :: proc(w: ^World, a: ^Assets, dt: f32) {
 	for entity, &state in w.animations {
 		sprite, sprite_ok := get_sprite(w, entity)
@@ -164,6 +171,7 @@ animation_system :: proc(w: ^World, a: ^Assets, dt: f32) {
 	}
 }
 
+// Chooses walk/idle animation kind and facing direction from the player's velocity.
 player_animation_system :: proc(w: ^World) {
 	for entity in w.player_controlled {
 		state, state_ok := get_animation(w, entity)
