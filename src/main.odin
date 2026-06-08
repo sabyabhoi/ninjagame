@@ -6,17 +6,26 @@ import "engine"
 import "vendor:raylib"
 
 // Runs one fixed-timestep simulation tick: input, animation, and physics systems.
-fixed_update :: proc(w: ^engine.World, a: ^engine.Assets, input: ^engine.InputState, dt: f32) {
+fixed_update :: proc(
+	w: ^engine.World,
+	a: ^engine.Assets,
+	input: ^engine.InputState,
+	camera: ^raylib.Camera2D,
+	tilemap: ^engine.Tilemap,
+	dt: f32,
+) {
 	player_input_system(w, input)
 	player_animation_system(w)
 	engine.animation_system(w, a, dt)
 	engine.physics_system(w, dt)
+	engine.update_camera(w, tilemap, camera)
 }
 
 // Clears the screen and renders the current frame.
-draw :: proc(w: ^engine.World) {
+draw :: proc(w: ^engine.World, tilemap: ^engine.Tilemap) {
 	raylib.ClearBackground(raylib.WHITE)
 
+	engine.render_tilemap(tilemap)
 	engine.render_system(w)
 }
 
@@ -75,8 +84,8 @@ main :: proc() {
 
 	input: engine.InputState
 
-	spawn_player(&w, &a, {100, 100})
-
+	spawn_player(&w, &a, {400, 400})
+	camera: raylib.Camera2D
 	raylib.SetTargetFPS(config.CONFIG.target_fps)
 
 	for !raylib.WindowShouldClose() {
@@ -88,12 +97,13 @@ main :: proc() {
 
 		for ; accumulator >= config.CONFIG.fixed_timestep;
 		    accumulator -= config.CONFIG.fixed_timestep {
-			fixed_update(&w, &a, &input, config.CONFIG.fixed_timestep)
+			fixed_update(&w, &a, &input, &camera, &tilemap, config.CONFIG.fixed_timestep)
 		}
 
 		raylib.BeginDrawing()
-		engine.render_tilemap(&tilemap)
-		draw(&w)
+		raylib.BeginMode2D(camera)
+		draw(&w, &tilemap)
+		raylib.EndMode2D()
 		raylib.EndDrawing()
 	}
 }
