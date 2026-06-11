@@ -86,6 +86,7 @@ main :: proc() {
 
 	spawn_player(&w, &a, {400, 400})
 	camera: raylib.Camera2D
+	engine.init_camera(&camera)
 	raylib.SetTargetFPS(config.CONFIG.target_fps)
 
 	for !raylib.WindowShouldClose() {
