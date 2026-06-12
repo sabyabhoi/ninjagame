@@ -46,6 +46,8 @@ assets_load_texture :: proc(a: ^Assets, path: string) -> (raylib.Texture2D, bool
 // Stores an animation clip under the given kind, freeing any clip it replaces.
 assets_register_clip :: proc(a: ^Assets, kind: AnimationKind, clip: AnimationClip) {
 	if existing := a.clips[kind]; len(existing.frames) > 0 {
+		fmt.println("[WARN] Frames already exist for this animation kind. Overwritting...")
+		fmt.println(kind)
 		delete(existing.frames)
 	}
 	a.clips[kind] = clip

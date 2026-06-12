@@ -1,7 +1,14 @@
 package engine
 
+import "../config"
 import "core:slice"
 import "vendor:raylib"
+
+// Temporary render entry used to depth-sort sprites before drawing.
+Drawable :: struct {
+	entity: Entity, // Entity whose sprite should be drawn.
+	sort_y: f32, // Y position used for back-to-front ordering.
+}
 
 // Advances each entity's position by its velocity scaled by the timestep.
 physics_system :: proc(w: ^World, dt: f32) {
@@ -10,12 +17,6 @@ physics_system :: proc(w: ^World, dt: f32) {
 		if !ok do continue
 		t.position += vel.value * dt
 	}
-}
-
-// Temporary render entry used to depth-sort sprites before drawing.
-Drawable :: struct {
-	entity: Entity, // Entity whose sprite should be drawn.
-	sort_y: f32, // Y position used for back-to-front ordering.
 }
 
 // Draws all sprites sorted back-to-front by their y position for depth ordering.
@@ -71,6 +72,22 @@ animation_system :: proc(w: ^World, a: ^Assets, dt: f32) {
 		}
 
 		animation_apply_sprite_frame(sprite, &state, clip)
+	}
+}
+
+attack_system :: proc(w: ^World, dt: f32) {
+	for entity, &attack in w.attack_state.data {
+		attack.timer += dt
+		if attack.timer >= ATTACK_FRAMES_PER_DIRECTION * config.CONFIG.attack_frame_duration {
+			state, ok := store_get(&w.animations, entity)
+			if !ok {
+				panic("Animation not found for player")
+			}
+			state.kind = .Idle
+			state.frame_index = 0
+			state.timer = 0
+			store_remove(&w.attack_state, entity)
+		}
 	}
 }
 

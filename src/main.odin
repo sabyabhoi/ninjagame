@@ -15,7 +15,10 @@ fixed_update :: proc(
 	dt: f32,
 ) {
 	player_input_system(w, input)
-	player_animation_system(w)
+	player_attack_system(w, input)
+	player_movement_system(w)
+
+	engine.attack_system(w, dt)
 	engine.animation_system(w, a, dt)
 	engine.physics_system(w, dt)
 	engine.update_camera(w, tilemap, camera)
@@ -57,12 +60,15 @@ main :: proc() {
 	walk_tex, walk_ok := engine.assets_load_texture(&a, config.ASSET_PATHS.walk)
 	if !walk_ok do panic("Failed to load walk texture")
 
+	attack_tex, attack_ok := engine.assets_load_texture(&a, config.ASSET_PATHS.attack)
+	if !attack_ok do panic("Failed to load attack texture")
+
 	engine.assets_register_clip(
 		&a,
 		.Idle,
 		engine.clip_idle_from_walk_grid(
 			walk_tex,
-			engine.WALK_DIRECTIONS,
+			engine.PLAYER_DIRECTIONS,
 			engine.WALK_FRAMES_PER_DIRECTION,
 			config.CONFIG.idle_frame_duration,
 		),
@@ -72,9 +78,20 @@ main :: proc() {
 		.Walk,
 		engine.clip_from_directional_grid(
 			walk_tex,
-			engine.WALK_DIRECTIONS,
+			engine.PLAYER_DIRECTIONS,
 			engine.WALK_FRAMES_PER_DIRECTION,
 			config.CONFIG.walk_frame_duration,
+		),
+	)
+
+	engine.assets_register_clip(
+		&a,
+		.Attack,
+		engine.clip_from_directional_grid(
+			attack_tex,
+			engine.PLAYER_DIRECTIONS,
+			engine.ATTACK_FRAMES_PER_DIRECTION,
+			config.CONFIG.attack_frame_duration,
 		),
 	)
 

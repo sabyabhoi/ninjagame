@@ -15,6 +15,7 @@ AnimationClip :: struct {
 AnimationKind :: enum {
 	Idle,
 	Walk,
+	Attack,
 }
 
 WALK_COL_DOWN :: 0
@@ -22,8 +23,9 @@ WALK_COL_LEFT :: 2
 WALK_COL_RIGHT :: 3
 WALK_COL_UP :: 1
 
-WALK_DIRECTIONS :: 4
+PLAYER_DIRECTIONS :: 4
 WALK_FRAMES_PER_DIRECTION :: 4
+ATTACK_FRAMES_PER_DIRECTION :: 4
 
 // Builds a single-row, non-directional animation clip from a horizontal sprite strip.
 clip_from_horizontal_strip :: proc(

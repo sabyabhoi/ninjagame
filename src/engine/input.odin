@@ -8,7 +8,6 @@ Action :: enum {
 	MoveRight,
 	MoveUp,
 	MoveDown,
-	Jump,
 	Attack,
 }
 
@@ -24,8 +23,7 @@ key_bindings := [Action]raylib.KeyboardKey {
 	.MoveLeft  = .A,
 	.MoveDown  = .S,
 	.MoveRight = .D,
-	.Jump      = .SPACE,
-	.Attack    = .J,
+	.Attack    = .SPACE,
 }
 
 // Polls the keyboard and refreshes the pressed, held, and released action sets.

@@ -30,3 +30,8 @@ AnimationState :: struct {
 	column:      int, // Facing direction index into the clip's grid.
 	timer:       f32, // Elapsed time toward advancing to the next frame.
 }
+
+AttackState :: struct {
+	timer: f32,
+}
+
