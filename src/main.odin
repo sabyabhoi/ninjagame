@@ -1,7 +1,6 @@
 package main
 
 import "config"
-import "core:fmt"
 import "core:strings"
 import "engine"
 import "vendor:raylib"
@@ -33,6 +32,7 @@ draw :: proc(w: ^engine.World, tilemap: ^engine.Tilemap) {
 	engine.render_system(w)
 }
 
+// Loads the world tilemap from disk, panicking on failure.
 load_tilemap :: proc(a: ^engine.Assets) -> engine.Tilemap {
 	tilemap: engine.Tilemap
 	if !engine.load_world_tilemap(a, &tilemap, config.ASSET_PATHS.tilemap) {
@@ -41,6 +41,7 @@ load_tilemap :: proc(a: ^engine.Assets) -> engine.Tilemap {
 	return tilemap
 }
 
+// Registers player animation clips (idle, walk, attack) for all directions.
 register_player_clips :: proc(a: ^engine.Assets) {
 	walk_spritesheet, walk_ok := engine.assets_load_texture(a, config.ASSET_PATHS.walk)
 	if !walk_ok do panic("Failed to load walk texture")
@@ -97,6 +98,7 @@ register_player_clips :: proc(a: ^engine.Assets) {
 	}
 }
 
+// Initialises the game world, spawns the player, and configures the camera.
 init_game :: proc(w: ^engine.World, a: ^engine.Assets, camera: ^raylib.Camera2D) {
 	engine.world_init(w)
 	spawn_player(w, a, {400, 400})
@@ -104,6 +106,7 @@ init_game :: proc(w: ^engine.World, a: ^engine.Assets, camera: ^raylib.Camera2D)
 	raylib.SetTargetFPS(config.CONFIG.target_fps)
 }
 
+// Reads input and advances the simulation by the fixed timestep accumulator.
 process_frame :: proc(
 	accumulator: ^f32,
 	w: ^engine.World,
@@ -122,6 +125,7 @@ process_frame :: proc(
 	}
 }
 
+// Begins the drawing context and renders the world through the camera.
 present_frame :: proc(w: ^engine.World, camera: ^raylib.Camera2D, tilemap: ^engine.Tilemap) {
 	raylib.BeginDrawing()
 	raylib.BeginMode2D(camera^)
@@ -130,6 +134,7 @@ present_frame :: proc(w: ^engine.World, camera: ^raylib.Camera2D, tilemap: ^engi
 	raylib.EndDrawing()
 }
 
+// The main loop: processes frames and presents them until the window is closed.
 run_game_loop :: proc(
 	w: ^engine.World,
 	a: ^engine.Assets,
@@ -170,3 +175,4 @@ main :: proc() {
 
 	run_game_loop(&w, &a, &input, &camera, &tilemap)
 }
+

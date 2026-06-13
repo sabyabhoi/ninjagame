@@ -100,3 +100,4 @@ animation_apply_initial_frame :: proc(w: ^World, a: ^Assets, entity: Entity) {
 	clip := assets_get_clip(a, state.kind, state.direction)
 	animation_apply_sprite_frame(sprite, state, clip)
 }
+
