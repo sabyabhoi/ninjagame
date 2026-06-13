@@ -10,6 +10,7 @@ spawn_player :: proc(
 	a: ^engine.Assets,
 	position: raylib.Vector2,
 ) -> engine.Entity {
+	weapon := engine.WeaponKind.Katana
 	player := engine.entity_create(w)
 	engine.store_add(
 		&w.transforms,
@@ -23,11 +24,19 @@ spawn_player :: proc(
 	engine.store_add(
 		&w.sprites,
 		player,
-		engine.Sprite{texture = a.clips[.Idle].texture, tint = raylib.WHITE},
+		engine.Sprite {
+			texture = engine.assets_get_clip(a, .Idle).texture,
+			tint = raylib.WHITE,
+		},
 	)
 	engine.store_add(&w.animations, player, engine.AnimationState{kind = .Idle})
+	engine.store_add(&w.weapons, player, engine.Weapon{kind = weapon})
+	engine.store_add(
+		&w.weapon_overlays,
+		player,
+		engine.WeaponOverlay{visible = false, sprite = {tint = raylib.WHITE}},
+	)
 	engine.store_add(&w.player_controlled, player, engine.PlayerControlled{})
 	engine.animation_apply_initial_frame(w, a, player)
 	return player
 }
-

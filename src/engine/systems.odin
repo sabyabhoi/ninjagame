@@ -53,6 +53,28 @@ render_system :: proc(w: ^World) {
 		}
 
 		raylib.DrawTexturePro(sprite.texture, src, dest, {0, 0}, 0, sprite.tint)
+
+		if overlay, overlay_ok := store_get(&w.weapon_overlays, drawable.entity);
+		   overlay_ok && overlay.visible {
+			overlay_src := overlay.sprite.source
+			if overlay_src.width == 0 {
+				overlay_src = {
+					0,
+					0,
+					f32(overlay.sprite.texture.width),
+					f32(overlay.sprite.texture.height),
+				}
+			}
+
+			raylib.DrawTexturePro(
+				overlay.sprite.texture,
+				overlay_src,
+				dest,
+				{0, 0},
+				0,
+				overlay.sprite.tint,
+			)
+		}
 	}
 }
 
@@ -62,7 +84,7 @@ animation_system :: proc(w: ^World, a: ^Assets, dt: f32) {
 		sprite, sprite_ok := store_get(&w.sprites, entity)
 		if !sprite_ok do continue
 
-		clip := &a.clips[state.kind]
+		clip := assets_get_clip(a, state.kind)
 		if len(clip.frames) == 0 do continue
 
 		state.timer += dt
@@ -72,6 +94,18 @@ animation_system :: proc(w: ^World, a: ^Assets, dt: f32) {
 		}
 
 		animation_apply_sprite_frame(sprite, &state, clip)
+
+		overlay, overlay_ok := store_get(&w.weapon_overlays, entity)
+		weapon, weapon_ok := store_get(&w.weapons, entity)
+		if !overlay_ok || !weapon_ok do continue
+
+		overlay.visible = weapon_overlay_visible(&state)
+		if overlay.visible {
+			weapon_clip := assets_get_weapon_attack_clip(a, weapon.kind)
+			if len(weapon_clip.frames) > 0 {
+				animation_apply_sprite_frame(&overlay.sprite, &state, weapon_clip)
+			}
+		}
 	}
 }
 

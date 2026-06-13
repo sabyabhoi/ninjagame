@@ -1,9 +1,23 @@
 package config
 
+// File paths for one weapon's attack overlay sprite sheet.
+WeaponAssetPaths :: struct {
+	attack: string,
+}
+
+// Attack sprite sheet paths for each weapon overlay.
+WeaponAssets :: struct {
+	katana:   WeaponAssetPaths,
+	shuriken: WeaponAssetPaths,
+	kunai:    WeaponAssetPaths,
+	bow:      WeaponAssetPaths,
+	staff:    WeaponAssetPaths,
+}
+
 // File paths for game assets loaded at startup.
 AssetPaths :: struct {
 	walk:    string, // Sprite sheet used for player walk and idle animations.
-	attack:  string, // Sprite sheet used for player attack animation
+	attack:  string, // Sprite sheet used for player attack animation.
 	tileset: string, // Tiled external tileset (.tsx) referenced by the map.
 	tilemap: string, // Tiled map file (.tmx).
 }
@@ -29,6 +43,24 @@ ASSET_PATHS :: AssetPaths {
 	tilemap = "res/map/map1.tmx",
 }
 
+WEAPON_ASSETS :: WeaponAssets {
+	katana = {
+		attack = "res/assets/Weapons/Katana/Attack.png",
+	},
+	shuriken = {
+		attack = "res/assets/Weapons/Shuriken/Attack.png",
+	},
+	kunai = {
+		attack = "res/assets/Weapons/Kunai/Attack.png",
+	},
+	bow = {
+		attack = "res/assets/Weapons/Bow/Attack.png",
+	},
+	staff = {
+		attack = "res/assets/Weapons/Staff/Attack.png",
+	},
+}
+
 CONFIG :: Config {
 	window_width          = 1200,
 	window_height         = 800,
@@ -41,4 +73,3 @@ CONFIG :: Config {
 	fixed_timestep        = 1.0 / 60.0,
 	target_fps            = 60,
 }
-
