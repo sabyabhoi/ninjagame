@@ -7,11 +7,12 @@ WeaponAssetPaths :: struct {
 
 // Attack sprite sheet paths for each weapon overlay.
 WeaponAssets :: struct {
-	katana:   WeaponAssetPaths,
-	shuriken: WeaponAssetPaths,
-	kunai:    WeaponAssetPaths,
-	bow:      WeaponAssetPaths,
-	staff:    WeaponAssetPaths,
+	katana:  WeaponAssetPaths,
+	hammer:  WeaponAssetPaths,
+	axe:     WeaponAssetPaths,
+	kunai:   WeaponAssetPaths,
+	net:     WeaponAssetPaths,
+	pickaxe: WeaponAssetPaths,
 }
 
 // File paths for game assets loaded at startup.
@@ -44,21 +45,11 @@ ASSET_PATHS :: AssetPaths {
 }
 
 WEAPON_ASSETS :: WeaponAssets {
-	katana = {
-		attack = "res/assets/Weapons/Katana/Attack.png",
-	},
-	shuriken = {
-		attack = "res/assets/Weapons/Shuriken/Attack.png",
-	},
-	kunai = {
-		attack = "res/assets/Weapons/Kunai/Attack.png",
-	},
-	bow = {
-		attack = "res/assets/Weapons/Bow/Attack.png",
-	},
-	staff = {
-		attack = "res/assets/Weapons/Staff/Attack.png",
-	},
+	katana = {attack = "res/assets/Actor/CharacterAnimated/Weapon/Katana.png"},
+	hammer = {attack = "res/assets/Actor/CharacterAnimated/Weapon/Hammer.png"},
+	axe = {attack = "res/assets/Actor/CharacterAnimated/Weapon/Axe.png"},
+	net = {attack = "res/assets/Actor/CharacterAnimated/Weapon/Net.png"},
+	pickaxe = {attack = "res/assets/Actor/CharacterAnimated/Weapon/Pickaxe.png"},
 }
 
 CONFIG :: Config {
@@ -73,3 +64,4 @@ CONFIG :: Config {
 	fixed_timestep        = 1.0 / 60.0,
 	target_fps            = 60,
 }
+

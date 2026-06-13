@@ -39,11 +39,8 @@ load_game_assets :: proc(a: ^engine.Assets, tilemap: ^engine.Tilemap) -> bool {
 		return false
 	}
 
-	walk_tex, walk_ok := engine.assets_load_texture(a, config.ASSET_PATHS.walk)
-	if !walk_ok do return false
-
-	attack_tex, attack_ok := engine.assets_load_texture(a, config.ASSET_PATHS.attack)
-	if !attack_ok do return false
+	walk_tex := engine.assets_load_texture(a, config.ASSET_PATHS.walk) or_return
+	attack_tex := engine.assets_load_texture(a, config.ASSET_PATHS.attack) or_return
 
 	engine.assets_register_clip(
 		a,
@@ -81,10 +78,10 @@ load_game_assets :: proc(a: ^engine.Assets, tilemap: ^engine.Tilemap) -> bool {
 		attack_path: string,
 	} {
 		{.Katana, config.WEAPON_ASSETS.katana.attack},
-		{.Shuriken, config.WEAPON_ASSETS.shuriken.attack},
-		{.Kunai, config.WEAPON_ASSETS.kunai.attack},
-		{.Bow, config.WEAPON_ASSETS.bow.attack},
-		{.Staff, config.WEAPON_ASSETS.staff.attack},
+		{.Hammer, config.WEAPON_ASSETS.hammer.attack},
+		{.Axe, config.WEAPON_ASSETS.axe.attack},
+		{.Net, config.WEAPON_ASSETS.net.attack},
+		{.Pickaxe, config.WEAPON_ASSETS.pickaxe.attack},
 	}
 
 	for entry in weapons {

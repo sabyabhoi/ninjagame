@@ -2,11 +2,11 @@ package engine
 
 // Identifies which weapon overlay an entity uses during attack.
 WeaponKind :: enum {
+	Axe,
+	Hammer,
 	Katana,
-	Shuriken,
-	Kunai,
-	Bow,
-	Staff,
+	Net,
+	Pickaxe,
 }
 
 // Per-entity equipped weapon; only the kind is runtime state.
@@ -26,8 +26,7 @@ assets_get_weapon_attack_clip :: proc(a: ^Assets, weapon: WeaponKind) -> ^Animat
 
 // True when the weapon overlay should be drawn for the current attack frame.
 weapon_overlay_visible :: proc(state: ^AnimationState) -> bool {
-	return state.kind == .Attack &&
-	       state.frame_index == ATTACK_FRAMES_PER_DIRECTION - 1
+	return state.kind == .Attack && state.frame_index == ATTACK_FRAMES_PER_DIRECTION - 1
 }
 
 // Loads the attack overlay clip for one weapon from its sprite sheet.
@@ -52,3 +51,4 @@ assets_load_weapon_attack :: proc(
 
 	return true
 }
+
