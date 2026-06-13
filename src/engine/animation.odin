@@ -56,7 +56,7 @@ clip_from_horizontal_strip :: proc(
 }
 
 // Builds a multi-direction animation clip from a grid where columns are directions and rows are frames.
-clip_from_directional_grid :: proc(
+build_clip_from_directional_grid :: proc(
 	tex: raylib.Texture2D,
 	directions: int,
 	frames_per_direction: int,
@@ -88,7 +88,7 @@ clip_from_directional_grid :: proc(
 }
 
 // Builds an idle clip by taking the first frame of each direction from a walk grid.
-clip_idle_from_walk_grid :: proc(
+build_clip_idle_from_walk_grid :: proc(
 	tex: raylib.Texture2D,
 	directions: int,
 	walk_frames_per_direction: int,

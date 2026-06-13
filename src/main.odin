@@ -1,6 +1,7 @@
 package main
 
 import "config"
+import "core:fmt"
 import "core:strings"
 import "engine"
 import "vendor:raylib"
@@ -34,24 +35,24 @@ draw :: proc(w: ^engine.World, tilemap: ^engine.Tilemap) {
 
 load_tilemap :: proc(a: ^engine.Assets) -> engine.Tilemap {
 	tilemap: engine.Tilemap
-	if !engine.load_world(a, &tilemap, config.ASSET_PATHS.tilemap) {
-		panic("Failed to load world")
+	if !engine.load_world_tilemap(a, &tilemap, config.ASSET_PATHS.tilemap) {
+		panic("Failed to load world tilemap")
 	}
 	return tilemap
 }
 
 register_player_clips :: proc(a: ^engine.Assets) {
-	walk_tex, walk_ok := engine.assets_load_texture(a, config.ASSET_PATHS.walk)
+	walk_spritesheet, walk_ok := engine.assets_load_texture(a, config.ASSET_PATHS.walk)
 	if !walk_ok do panic("Failed to load walk texture")
 
-	attack_tex, attack_ok := engine.assets_load_texture(a, config.ASSET_PATHS.attack)
+	attack_spritesheet, attack_ok := engine.assets_load_texture(a, config.ASSET_PATHS.attack)
 	if !attack_ok do panic("Failed to load attack texture")
 
 	engine.assets_register_clip(
 		a,
 		.Idle,
-		engine.clip_idle_from_walk_grid(
-			walk_tex,
+		engine.build_clip_idle_from_walk_grid(
+			walk_spritesheet,
 			engine.PLAYER_DIRECTIONS,
 			engine.WALK_FRAMES_PER_DIRECTION,
 			config.CONFIG.idle_frame_duration,
@@ -60,8 +61,8 @@ register_player_clips :: proc(a: ^engine.Assets) {
 	engine.assets_register_clip(
 		a,
 		.Walk,
-		engine.clip_from_directional_grid(
-			walk_tex,
+		engine.build_clip_from_directional_grid(
+			walk_spritesheet,
 			engine.PLAYER_DIRECTIONS,
 			engine.WALK_FRAMES_PER_DIRECTION,
 			config.CONFIG.walk_frame_duration,
@@ -70,8 +71,8 @@ register_player_clips :: proc(a: ^engine.Assets) {
 	engine.assets_register_clip(
 		a,
 		.Attack,
-		engine.clip_from_directional_grid(
-			attack_tex,
+		engine.build_clip_from_directional_grid(
+			attack_spritesheet,
 			engine.PLAYER_DIRECTIONS,
 			engine.ATTACK_FRAMES_PER_DIRECTION,
 			config.CONFIG.attack_frame_duration,
@@ -152,3 +153,4 @@ main :: proc() {
 
 	run_game_loop(&w, &a, &input, &camera, &tilemap)
 }
+

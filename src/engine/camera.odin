@@ -19,10 +19,10 @@ update_camera :: proc(w: ^World, tilemap: ^Tilemap, camera: ^raylib.Camera2D) ->
 			transform.position + {f32(sprite.texture.width), f32(sprite.texture.height)} / 2
 
 		upper_x :=
-			f32(tilemap.num_cols * tilemap.tile_width) * tilemap.transform.scale.x -
+			f32(tilemap.num_cols * tilemap.tile_width) * tilemap.scale.x -
 			f32(config.CONFIG.window_width) / 2
 		upper_y :=
-			f32(tilemap.num_rows * tilemap.tile_height) * tilemap.transform.scale.y -
+			f32(tilemap.num_rows * tilemap.tile_height) * tilemap.scale.y -
 			f32(config.CONFIG.window_height) / 2
 
 		camera.target.x = clamp(camera.target.x, camera.offset.x, upper_x)

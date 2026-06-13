@@ -15,7 +15,7 @@ Tilemap :: struct {
 	tile_height: u64,
 	data:        [][]u64,
 	tileset:     Tileset,
-	transform:   Transform,
+	scale:       raylib.Vector2,
 }
 
 Tileset :: struct {
@@ -31,10 +31,10 @@ render_tilemap :: proc(tilemap: ^Tilemap) {
 		for col in 0 ..< tilemap.num_cols {
 			src_rect := get_tile_rect_from_index(&tilemap.tileset, tilemap.data[row][col])
 			dest_rect := raylib.Rectangle {
-				x      = f32(col * tilemap.tile_width) * tilemap.transform.scale.x,
-				y      = f32(row * tilemap.tile_height) * tilemap.transform.scale.y,
-				width  = f32(tilemap.tile_width) * tilemap.transform.scale.x,
-				height = f32(tilemap.tile_height) * tilemap.transform.scale.y,
+				x      = f32(col * tilemap.tile_width) * tilemap.scale.x,
+				y      = f32(row * tilemap.tile_height) * tilemap.scale.y,
+				width  = f32(tilemap.tile_width) * tilemap.scale.x,
+				height = f32(tilemap.tile_height) * tilemap.scale.y,
 			}
 			raylib.DrawTexturePro(
 				tilemap.tileset.texture,
@@ -183,7 +183,7 @@ parse_csv :: proc(raw_data: string, rows, cols: u64) -> (result_arr: [][]u64, ok
 	return result, true
 }
 
-load_world :: proc(a: ^Assets, tilemap: ^Tilemap, filepath: string) -> bool {
+load_world_tilemap :: proc(a: ^Assets, tilemap: ^Tilemap, filepath: string) -> bool {
 	doc, err := xml.load_from_file(filepath)
 	if err != .None {
 		fmt.eprintln("Failed to parse tilemap XML:", err)
@@ -195,8 +195,7 @@ load_world :: proc(a: ^Assets, tilemap: ^Tilemap, filepath: string) -> bool {
 	tilemap.num_rows = fetch_attribute_u64(doc, 0, "height") or_return
 	tilemap.tile_width = fetch_attribute_u64(doc, 0, "tilewidth") or_return
 	tilemap.tile_height = fetch_attribute_u64(doc, 0, "tileheight") or_return
-	tilemap.transform.position = {0, 0}
-	tilemap.transform.scale = {4.0, 4.0}
+	tilemap.scale = {4.0, 4.0}
 
 	tileset_id := xml.find_child_by_ident(doc, 0, "tileset") or_return
 

@@ -29,7 +29,7 @@ test_clip_from_directional_grid :: proc(t: ^testing.T) {
 	}
 	directions := 4
 	frames_per_direction := 4
-	clip := clip_from_directional_grid(tex, directions, frames_per_direction, 0.10)
+	clip := build_clip_from_directional_grid(tex, directions, frames_per_direction, 0.10)
 	defer delete(clip.frames)
 
 	testing.expect(t, len(clip.frames) == 16, "expected 16 frames")
