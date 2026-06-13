@@ -63,6 +63,7 @@ register_player_clips :: proc(a: ^engine.Assets) {
 				walk_spritesheet,
 				column,
 				sheet_columns,
+				walk_frames_per_direction,
 				1,
 				config.CONFIG.idle_frame_duration,
 			),
@@ -76,6 +77,7 @@ register_player_clips :: proc(a: ^engine.Assets) {
 				column,
 				sheet_columns,
 				walk_frames_per_direction,
+				walk_frames_per_direction,
 				config.CONFIG.walk_frame_duration,
 			),
 		)
@@ -87,6 +89,7 @@ register_player_clips :: proc(a: ^engine.Assets) {
 				attack_spritesheet,
 				column,
 				sheet_columns,
+				attack_frames_per_direction,
 				attack_frames_per_direction,
 				config.CONFIG.attack_frame_duration,
 			),

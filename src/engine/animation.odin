@@ -59,11 +59,12 @@ clip_from_sheet_column :: proc(
 	tex: raylib.Texture2D,
 	column: int,
 	total_columns: int,
+	rows_in_sheet: int,
 	frame_count: int,
 	duration: f32,
 ) -> AnimationClip {
 	frame_w := f32(tex.width) / f32(total_columns)
-	frame_h := f32(tex.height) / f32(frame_count)
+	frame_h := f32(tex.height) / f32(rows_in_sheet)
 
 	frames := make([]raylib.Rectangle, frame_count)
 	for row in 0 ..< frame_count {

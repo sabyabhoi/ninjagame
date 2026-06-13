@@ -26,7 +26,7 @@ test_clip_from_sheet_column :: proc(t: ^testing.T) {
 		height = 16,
 	}
 	frame_count := 4
-	clip := clip_from_sheet_column(tex, 2, 4, frame_count, 0.10)
+	clip := clip_from_sheet_column(tex, 2, 4, frame_count, frame_count, 0.10)
 	defer delete(clip.frames)
 
 	testing.expect(t, len(clip.frames) == frame_count, "expected 4 frames")
@@ -34,6 +34,21 @@ test_clip_from_sheet_column :: proc(t: ^testing.T) {
 	testing.expect(t, clip.frames[0].y == 0, "expected y for row 0")
 	testing.expect(t, clip.frames[3].x == 8, "expected x for column 2 last frame")
 	testing.expect(t, clip.frames[3].y == 12, "expected y for row 3")
+}
+
+// Verifies idle clips use one row-sized frame, not the full column height.
+@(test)
+test_clip_from_sheet_column_idle :: proc(t: ^testing.T) {
+	tex := raylib.Texture2D {
+		width  = 16,
+		height = 16,
+	}
+	clip := clip_from_sheet_column(tex, 1, 4, 4, 1, 0.15)
+	defer delete(clip.frames)
+
+	testing.expect(t, len(clip.frames) == 1, "expected 1 idle frame")
+	testing.expect(t, clip.frames[0].height == 4, "expected row height 4, not full column")
+	testing.expect(t, clip.frames[0].y == 0, "expected top row")
 }
 
 // Verifies logical directions map to the player sprite sheet column order.
