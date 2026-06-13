@@ -10,7 +10,7 @@ textures and the built animation clips.
 ```odin
 Assets :: struct {
     textures: map[string]raylib.Texture2D,     // path -> texture
-    clips:    [AnimationKind]AnimationClip,     // .Idle / .Walk
+    clips:    [AnimationKind][Direction]AnimationClip,  // one clip per kind + facing
 }
 ```
 
@@ -20,8 +20,9 @@ Key procs:
   path, so asking for the same file twice returns the already-loaded texture
   instead of loading it again. Returns `(texture, ok)`; `ok` is false if the
   file failed to load.
-- `assets_register_clip` — stores a built `AnimationClip` under its
-  `AnimationKind`, freeing any clip it replaces.
+- `assets_register_clip` — stores a built `AnimationClip` under a kind and
+  direction, freeing any clip it replaces.
+- `assets_get_clip` — returns the clip for a kind and direction pair.
 - `assets_init` / `assets_destroy` — set up the texture map and, on shutdown,
   unload every texture and free every clip's frame data.
 

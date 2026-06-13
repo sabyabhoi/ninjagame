@@ -3,7 +3,7 @@ package engine
 import "core:testing"
 import "vendor:raylib"
 
-// Verifies a horizontal strip is split into evenly-sized, non-directional frames.
+// Verifies a horizontal strip is split into evenly-sized frames.
 @(test)
 test_clip_from_horizontal_strip :: proc(t: ^testing.T) {
 	tex := raylib.Texture2D {
@@ -14,50 +14,33 @@ test_clip_from_horizontal_strip :: proc(t: ^testing.T) {
 	defer delete(clip.frames)
 
 	testing.expect(t, len(clip.frames) == 4, "expected 4 frames")
-	testing.expect(t, clip.directions == 1, "expected non-directional clip")
-	testing.expect(t, clip.frames_per_direction == 4, "expected 4 frames per direction")
 	testing.expect(t, clip.frames[0].width == 8, "expected frame width 8")
 	testing.expect(t, clip.frames[1].x == 8, "expected second frame x offset 8")
 }
 
-// Verifies a directional grid produces the expected frame count and per-cell offsets.
+// Verifies a sheet column produces the expected frame count and per-cell offsets.
 @(test)
-test_clip_from_directional_grid :: proc(t: ^testing.T) {
+test_clip_from_sheet_column :: proc(t: ^testing.T) {
 	tex := raylib.Texture2D {
 		width  = 16,
 		height = 16,
 	}
-	directions := 4
-	frames_per_direction := 4
-	clip := build_clip_from_directional_grid(tex, directions, frames_per_direction, 0.10)
+	frame_count := 4
+	clip := clip_from_sheet_column(tex, 2, 4, frame_count, 0.10)
 	defer delete(clip.frames)
 
-	testing.expect(t, len(clip.frames) == 16, "expected 16 frames")
-	testing.expect(t, clip.directions == directions, "expected 4 directions")
-	testing.expect(
-		t,
-		clip.frames_per_direction == frames_per_direction,
-		"expected 4 frames per direction",
-	)
-
-	idx := 2 * frames_per_direction + 3
-	testing.expect(t, clip.frames[idx].x == 8, "expected x for column 2")
-	testing.expect(t, clip.frames[idx].y == 12, "expected y for row 3")
+	testing.expect(t, len(clip.frames) == frame_count, "expected 4 frames")
+	testing.expect(t, clip.frames[0].x == 8, "expected x for column 2")
+	testing.expect(t, clip.frames[0].y == 0, "expected y for row 0")
+	testing.expect(t, clip.frames[3].x == 8, "expected x for column 2 last frame")
+	testing.expect(t, clip.frames[3].y == 12, "expected y for row 3")
 }
 
-// Verifies the flat frame index is computed correctly from column and frame.
+// Verifies logical directions map to the player sprite sheet column order.
 @(test)
-test_animation_frame_index :: proc(t: ^testing.T) {
-	clip := AnimationClip {
-		directions           = 4,
-		frames_per_direction = 4,
-	}
-	state := AnimationState {
-		frame_index = 2,
-		column      = 1,
-	}
-
-	idx := animation_frame_index(&state, &clip)
-	testing.expect(t, idx == 6, "expected frame index 6 for column 1 frame 2")
+test_direction_sheet_columns :: proc(t: ^testing.T) {
+	testing.expect(t, DIRECTION_SHEET_COLUMNS[.Down] == 0, "expected down in column 0")
+	testing.expect(t, DIRECTION_SHEET_COLUMNS[.Up] == 1, "expected up in column 1")
+	testing.expect(t, DIRECTION_SHEET_COLUMNS[.Left] == 2, "expected left in column 2")
+	testing.expect(t, DIRECTION_SHEET_COLUMNS[.Right] == 3, "expected right in column 3")
 }
-

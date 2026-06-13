@@ -20,24 +20,25 @@ if .MoveUp    in input.held do vel.value.y -= CONFIG.player_speed
 if .MoveDown  in input.held do vel.value.y += CONFIG.player_speed
 ```
 
-## player_animation_system (`animation.odin`)
+## player_movement_system (`player.odin`)
 
 Decides *which* animation a player entity should be playing, based on its
 velocity:
 
 - Moving -> `kind = .Walk`; not moving -> `kind = .Idle`.
-- The facing direction (`column`) is chosen from the larger velocity axis:
-  mostly horizontal -> left/right, mostly vertical -> up/down.
+- The facing direction is chosen from the larger velocity axis: mostly
+  horizontal -> left/right, mostly vertical -> up/down.
 - When the animation or direction changes, `frame_index` and `timer` reset to 0
   so the new animation starts cleanly.
 
 This only *selects* the animation. It does not advance frames.
 
-## animation_system (`animation.odin`)
+## animation_system (`systems.odin`)
 
 Advances animation frames over time for **every** entity with an
 `AnimationState` (players and any future NPCs).
 
+- Looks up the clip for `state.kind` and `state.direction`.
 - Adds `dt` to the state's `timer`.
 - Each time the timer passes the clip's `duration`, it advances to the next
   frame, wrapping around with modulo.
@@ -45,12 +46,18 @@ Advances animation frames over time for **every** entity with an
   so the renderer shows the right image.
 
 ```odin
+clip := assets_get_clip(a, state.kind, state.direction)
 state.timer += dt
 for state.timer >= clip.duration {
     state.timer -= clip.duration
-    state.frame_index = (state.frame_index + 1) % clip.frames_per_direction
+    state.frame_index = (state.frame_index + 1) % len(clip.frames)
 }
 ```
+
+## attack_system (`systems.odin`)
+
+Ends the attack animation when the clip has played through. Duration is derived
+from the registered attack clip's frame count and per-frame duration.
 
 ## physics_system (`world.odin`)
 
@@ -87,7 +94,7 @@ A single logic step flows like this:
 ```
 keys held ─▶ player_input_system ─▶ Velocity
                                         │
-Velocity ─▶ player_animation_system ─▶ AnimationState (kind + direction)
+Velocity ─▶ player_movement_system ─▶ AnimationState (kind + direction)
                                         │
 AnimationState + dt ─▶ animation_system ─▶ Sprite (current frame)
                                         │

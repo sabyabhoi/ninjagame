@@ -41,16 +41,16 @@ Sprite :: struct {
 
 ## AnimationState (`animation.odin`)
 
-The "playhead" for an animation: which clip is playing, which frame, which
-direction column, and a timer that drives frame advances. See
+The "playhead" for an animation: which clip is playing, which direction, which
+frame, and a timer that drives frame advances. See
 [animation.md](animation.md) for the details.
 
 ```odin
 AnimationState :: struct {
-    kind:        AnimationKind,  // .Idle or .Walk
-    frame_index: int,            // current frame within the direction
-    column:      int,            // facing direction (down/left/right/up)
-    timer:       f32,            // time accumulated toward the next frame
+    kind:        AnimationKind,  // .Idle, .Walk, or .Attack
+    direction:   Direction,      // facing (down/left/right/up)
+    frame_index: int,            // current frame within the clip
+    timer:       f32,             // time accumulated toward the next frame
 }
 ```
 
@@ -74,8 +74,8 @@ spawn_player :: proc(w: ^World, a: ^Assets, position: raylib.Vector2) -> Entity 
     player := entity_create(w)
     store_add(&w.transforms, player, Transform{position = position, scale = {4, 4}})
     store_add(&w.velocities, player, Velocity{})
-    store_add(&w.sprites, player, Sprite{texture = a.clips[.Idle].texture, tint = WHITE})
-    store_add(&w.animations, player, AnimationState{kind = .Idle})
+    store_add(&w.sprites, player, Sprite{texture = a.clips[.Idle][.Down].texture, tint = WHITE})
+    store_add(&w.animations, player, AnimationState{kind = .Idle, direction = .Down})
     store_add(&w.player_controlled, player, PlayerControlled{})
     animation_apply_initial_frame(w, a, player)
     return player

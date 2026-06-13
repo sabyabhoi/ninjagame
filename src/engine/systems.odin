@@ -1,6 +1,5 @@
 package engine
 
-import "../config"
 import "core:slice"
 import "vendor:raylib"
 
@@ -62,27 +61,30 @@ animation_system :: proc(w: ^World, a: ^Assets, dt: f32) {
 		sprite, sprite_ok := store_get(&w.sprites, entity)
 		if !sprite_ok do continue
 
-		clip := &a.clips[state.kind]
+		clip := assets_get_clip(a, state.kind, state.direction)
 		if len(clip.frames) == 0 do continue
 
 		state.timer += dt
 		for state.timer >= clip.duration {
 			state.timer -= clip.duration
-			state.frame_index = (state.frame_index + 1) % clip.frames_per_direction
+			state.frame_index = (state.frame_index + 1) % len(clip.frames)
 		}
 
 		animation_apply_sprite_frame(sprite, &state, clip)
 	}
 }
 
-attack_system :: proc(w: ^World, dt: f32) {
+attack_system :: proc(w: ^World, a: ^Assets, dt: f32) {
 	for entity, &attack in w.attack_state.data {
 		attack.timer += dt
-		if attack.timer >= ATTACK_FRAMES_PER_DIRECTION * config.CONFIG.attack_frame_duration {
-			state, ok := store_get(&w.animations, entity)
-			if !ok {
-				panic("Animation not found for player")
-			}
+
+		state, ok := store_get(&w.animations, entity)
+		if !ok {
+			panic("Animation not found for player")
+		}
+
+		clip := assets_get_clip(a, .Attack, state.direction)
+		if attack.timer >= f32(len(clip.frames)) * clip.duration {
 			state.kind = .Idle
 			state.frame_index = 0
 			state.timer = 0

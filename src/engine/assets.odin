@@ -7,7 +7,7 @@ import "vendor:raylib"
 // Central store for loaded textures and registered animation clips.
 Assets :: struct {
 	textures: map[string]raylib.Texture2D, // Path-keyed cache of loaded GPU textures.
-	clips:    [AnimationKind]AnimationClip, // One clip per animation kind (idle, walk, etc.).
+	clips:    [AnimationKind][Direction]AnimationClip, // One clip per kind and facing.
 }
 
 // Initializes the asset store's texture cache.
@@ -17,8 +17,10 @@ assets_init :: proc(a: ^Assets) {
 
 // Frees clip frame data and unloads every cached GPU texture.
 assets_destroy :: proc(a: ^Assets) {
-	for &clip in a.clips {
-		delete(clip.frames)
+	for &kind_clips in a.clips {
+		for &clip in kind_clips {
+			delete(clip.frames)
+		}
 	}
 
 	for _, tex in a.textures {
@@ -43,13 +45,22 @@ assets_load_texture :: proc(a: ^Assets, path: string) -> (raylib.Texture2D, bool
 	return tex, true
 }
 
-// Stores an animation clip under the given kind, freeing any clip it replaces.
-assets_register_clip :: proc(a: ^Assets, kind: AnimationKind, clip: AnimationClip) {
-	if existing := a.clips[kind]; len(existing.frames) > 0 {
-		fmt.println("[WARN] Frames already exist for this animation kind. Overwritting...")
-		fmt.println(kind)
-		delete(existing.frames)
-	}
-	a.clips[kind] = clip
+// Returns the animation clip for the given kind and facing direction.
+assets_get_clip :: proc(a: ^Assets, kind: AnimationKind, dir: Direction) -> ^AnimationClip {
+	return &a.clips[kind][dir]
 }
 
+// Stores an animation clip under the given kind and direction, freeing any clip it replaces.
+assets_register_clip :: proc(
+	a: ^Assets,
+	kind: AnimationKind,
+	dir: Direction,
+	clip: AnimationClip,
+) {
+	if existing := a.clips[kind][dir]; len(existing.frames) > 0 {
+		fmt.println("[WARN] Frames already exist for this animation kind and direction. Overwritting...")
+		fmt.println(kind, dir)
+		delete(existing.frames)
+	}
+	a.clips[kind][dir] = clip
+}

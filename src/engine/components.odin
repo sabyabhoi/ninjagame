@@ -26,8 +26,8 @@ PlayerControlled :: struct {}
 // Per-entity playback state for the currently active animation clip.
 AnimationState :: struct {
 	kind:        AnimationKind, // Which clip (idle, walk, etc.) is playing.
-	frame_index: int, // Current frame within the active direction column.
-	column:      int, // Facing direction index into the clip's grid.
+	direction:   Direction, // Facing direction for clip lookup.
+	frame_index: int, // Current frame within the active clip.
 	timer:       f32, // Elapsed time toward advancing to the next frame.
 }
 

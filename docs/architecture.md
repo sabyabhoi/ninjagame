@@ -68,12 +68,12 @@ lives. Components stay as pure data. See [systems.md](systems.md).
 
 ## The game loop
 
-The whole program is driven by the loop in `main` (`src/main.odin`). Player-specific systems (`player_input_system`, `player_animation_system`) run from `src/player.odin`; generic engine systems live in `src/engine/systems.odin`. In order:
+The whole program is driven by the loop in `main` (`src/main.odin`). Player-specific systems (`player_input_system`, `player_movement_system`, `player_attack_system`) run from `src/player.odin`; generic engine systems live in `src/engine/systems.odin`. In order:
 
 1. **Setup**
    - Open the window (size/title come from `CONFIG`).
-   - Initialize `Assets`, load the walk texture, and build the `Idle` and
-     `Walk` animation clips from it.
+   - Initialize `Assets`, load sprite sheets, and build per-direction animation
+     clips for Idle, Walk, and Attack.
    - Initialize the `World`.
    - Spawn the player at `{100, 100}`.
 
@@ -114,9 +114,11 @@ machine still only steps logic 60 times a second.
 ```odin
 fixed_update :: proc(w: ^engine.World, a: ^engine.Assets, input: ^engine.InputState, dt: f32) {
     player_input_system(w, input)          // 1. turn key presses into velocity (main)
-    player_animation_system(w)             // 2. pick Idle/Walk + facing direction (main)
-    engine.animation_system(w, a, dt)      // 3. advance animation frames over time
-    engine.physics_system(w, dt)           // 4. move entities by their velocity
+    player_attack_system(w, input)         // 2. start attack animation on key press (main)
+    player_movement_system(w)              // 3. pick Idle/Walk + facing direction (main)
+    engine.attack_system(w, a, dt)         // 4. end attack when clip finishes
+    engine.animation_system(w, a, dt)      // 5. advance animation frames over time
+    engine.physics_system(w, dt)           // 6. move entities by their velocity
 }
 ```
 

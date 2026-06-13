@@ -49,7 +49,7 @@ player_movement_system :: proc(w: ^engine.World) {
 		if !vel_ok do continue
 
 		prev_kind := state.kind
-		prev_column := state.column
+		prev_direction := state.direction
 
 		moving := vel.value.x != 0 || vel.value.y != 0
 		if moving {
@@ -62,15 +62,15 @@ player_movement_system :: proc(w: ^engine.World) {
 
 			if abs_x >= abs_y {
 				if vel.value.x < 0 {
-					state.column = engine.WALK_COL_LEFT
+					state.direction = engine.Direction.Left
 				} else {
-					state.column = engine.WALK_COL_RIGHT
+					state.direction = engine.Direction.Right
 				}
 			} else {
 				if vel.value.y < 0 {
-					state.column = engine.WALK_COL_UP
+					state.direction = engine.Direction.Up
 				} else {
-					state.column = engine.WALK_COL_DOWN
+					state.direction = engine.Direction.Down
 				}
 			}
 		} else {
@@ -79,7 +79,7 @@ player_movement_system :: proc(w: ^engine.World) {
 			}
 		}
 
-		if state.kind != prev_kind || state.column != prev_column {
+		if state.kind != prev_kind || state.direction != prev_direction {
 			state.frame_index = 0
 			state.timer = 0
 		}

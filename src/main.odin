@@ -19,7 +19,7 @@ fixed_update :: proc(
 	player_attack_system(w, input)
 	player_movement_system(w)
 
-	engine.attack_system(w, dt)
+	engine.attack_system(w, a, dt)
 	engine.animation_system(w, a, dt)
 	engine.physics_system(w, dt)
 	engine.update_camera(w, tilemap, camera)
@@ -48,36 +48,50 @@ register_player_clips :: proc(a: ^engine.Assets) {
 	attack_spritesheet, attack_ok := engine.assets_load_texture(a, config.ASSET_PATHS.attack)
 	if !attack_ok do panic("Failed to load attack texture")
 
-	engine.assets_register_clip(
-		a,
-		.Idle,
-		engine.build_clip_idle_from_walk_grid(
-			walk_spritesheet,
-			engine.PLAYER_DIRECTIONS,
-			engine.WALK_FRAMES_PER_DIRECTION,
-			config.CONFIG.idle_frame_duration,
-		),
-	)
-	engine.assets_register_clip(
-		a,
-		.Walk,
-		engine.build_clip_from_directional_grid(
-			walk_spritesheet,
-			engine.PLAYER_DIRECTIONS,
-			engine.WALK_FRAMES_PER_DIRECTION,
-			config.CONFIG.walk_frame_duration,
-		),
-	)
-	engine.assets_register_clip(
-		a,
-		.Attack,
-		engine.build_clip_from_directional_grid(
-			attack_spritesheet,
-			engine.PLAYER_DIRECTIONS,
-			engine.ATTACK_FRAMES_PER_DIRECTION,
-			config.CONFIG.attack_frame_duration,
-		),
-	)
+	walk_frames_per_direction := 4
+	attack_frames_per_direction := 4
+	sheet_columns := 4
+
+	for dir in engine.Direction {
+		column := engine.DIRECTION_SHEET_COLUMNS[dir]
+
+		engine.assets_register_clip(
+			a,
+			.Idle,
+			dir,
+			engine.clip_from_sheet_column(
+				walk_spritesheet,
+				column,
+				sheet_columns,
+				1,
+				config.CONFIG.idle_frame_duration,
+			),
+		)
+		engine.assets_register_clip(
+			a,
+			.Walk,
+			dir,
+			engine.clip_from_sheet_column(
+				walk_spritesheet,
+				column,
+				sheet_columns,
+				walk_frames_per_direction,
+				config.CONFIG.walk_frame_duration,
+			),
+		)
+		engine.assets_register_clip(
+			a,
+			.Attack,
+			dir,
+			engine.clip_from_sheet_column(
+				attack_spritesheet,
+				column,
+				sheet_columns,
+				attack_frames_per_direction,
+				config.CONFIG.attack_frame_duration,
+			),
+		)
+	}
 }
 
 init_game :: proc(w: ^engine.World, a: ^engine.Assets, camera: ^raylib.Camera2D) {
@@ -153,4 +167,3 @@ main :: proc() {
 
 	run_game_loop(&w, &a, &input, &camera, &tilemap)
 }
-

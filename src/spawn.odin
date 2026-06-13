@@ -23,9 +23,13 @@ spawn_player :: proc(
 	engine.store_add(
 		&w.sprites,
 		player,
-		engine.Sprite{texture = a.clips[.Idle].texture, tint = raylib.WHITE},
+		engine.Sprite{texture = a.clips[.Idle][.Down].texture, tint = raylib.WHITE},
 	)
-	engine.store_add(&w.animations, player, engine.AnimationState{kind = .Idle})
+	engine.store_add(
+		&w.animations,
+		player,
+		engine.AnimationState{kind = .Idle, direction = .Down},
+	)
 	engine.store_add(&w.player_controlled, player, engine.PlayerControlled{})
 	engine.animation_apply_initial_frame(w, a, player)
 	return player
