@@ -24,12 +24,12 @@ assets_get_weapon_attack_clip :: proc(a: ^Assets, weapon: WeaponKind) -> ^Animat
 	return &a.weapon_attack_clips[weapon]
 }
 
-// True when the weapon overlay should be drawn for the current attack frame.
+// True while attacking; weapon sheets use the same 4-direction x 4-frame grid as the player.
 weapon_overlay_visible :: proc(state: ^AnimationState) -> bool {
-	return state.kind == .Attack && state.frame_index == ATTACK_FRAMES_PER_DIRECTION - 1
+	return state.kind == .Attack
 }
 
-// Loads the attack overlay clip for one weapon from its sprite sheet.
+// Loads a weapon's 4x4 attack overlay sheet (columns = facing, rows = frames).
 assets_load_weapon_attack :: proc(
 	a: ^Assets,
 	weapon: WeaponKind,

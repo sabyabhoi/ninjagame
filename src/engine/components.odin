@@ -35,7 +35,7 @@ AttackState :: struct {
 	timer: f32,
 }
 
-// Drawable weapon overlay; hidden until the final frame of an attack.
+// Weapon sprite drawn on top of the body during attack; hidden while idle or walking.
 WeaponOverlay :: struct {
 	sprite:  Sprite,
 	visible: bool,

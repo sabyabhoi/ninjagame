@@ -99,12 +99,14 @@ animation_system :: proc(w: ^World, a: ^Assets, dt: f32) {
 		weapon, weapon_ok := store_get(&w.weapons, entity)
 		if !overlay_ok || !weapon_ok do continue
 
-		overlay.visible = weapon_overlay_visible(&state)
-		if overlay.visible {
+		if weapon_overlay_visible(&state) {
 			weapon_clip := assets_get_weapon_attack_clip(a, weapon.kind)
 			if len(weapon_clip.frames) > 0 {
+				overlay.visible = true
 				animation_apply_sprite_frame(&overlay.sprite, &state, weapon_clip)
 			}
+		} else {
+			overlay.visible = false
 		}
 	}
 }
