@@ -1,7 +1,6 @@
 package main
 
 import "config"
-import "core:fmt"
 import "core:strings"
 import "engine"
 import "vendor:raylib"
@@ -33,100 +32,10 @@ draw :: proc(w: ^engine.World, tilemap: ^engine.Tilemap) {
 	engine.render_system(w)
 }
 
-// Loads the tilemap, player animation clips, and weapon attack overlays.
-load_game_assets :: proc(a: ^engine.Assets, tilemap: ^engine.Tilemap) -> bool {
-	if !engine.load_world(a, tilemap, config.ASSET_PATHS.tilemap) {
-		return false
-	}
-
-	walk_tex := engine.assets_load_texture(a, config.ASSET_PATHS.walk) or_return
-	attack_tex := engine.assets_load_texture(a, config.ASSET_PATHS.attack) or_return
-
-	engine.assets_register_clip(
-		a,
-		.Idle,
-		engine.clip_idle_from_walk_grid(
-			walk_tex,
-			engine.PLAYER_DIRECTIONS,
-			engine.WALK_FRAMES_PER_DIRECTION,
-			config.CONFIG.idle_frame_duration,
-		),
-	)
-	engine.assets_register_clip(
-		a,
-		.Walk,
-		engine.clip_from_directional_grid(
-			walk_tex,
-			engine.PLAYER_DIRECTIONS,
-			engine.WALK_FRAMES_PER_DIRECTION,
-			config.CONFIG.walk_frame_duration,
-		),
-	)
-	engine.assets_register_clip(
-		a,
-		.Attack,
-		engine.clip_from_directional_grid(
-			attack_tex,
-			engine.PLAYER_DIRECTIONS,
-			engine.ATTACK_FRAMES_PER_DIRECTION,
-			config.CONFIG.attack_frame_duration,
-		),
-	)
-
-	weapons := []struct {
-		kind:        engine.WeaponKind,
-		attack_path: string,
-	} {
-		{.Katana, config.WEAPON_ASSETS.katana.attack},
-		{.Hammer, config.WEAPON_ASSETS.hammer.attack},
-		{.Axe, config.WEAPON_ASSETS.axe.attack},
-		{.Net, config.WEAPON_ASSETS.net.attack},
-		{.Pickaxe, config.WEAPON_ASSETS.pickaxe.attack},
-	}
-
-	for entry in weapons {
-		if !engine.assets_load_weapon_attack(
-			a,
-			entry.kind,
-			entry.attack_path,
-			config.CONFIG.attack_frame_duration,
-		) {
-			fmt.eprintf("Warning: failed to load weapon attack overlay %v\n", entry.kind)
-		}
-	}
-
-	return true
-}
-
-// Runs the fixed-timestep update loop and draws each frame until the window closes.
-run_game_loop :: proc(w: ^engine.World, a: ^engine.Assets, tilemap: ^engine.Tilemap) {
-	input: engine.InputState
-	camera: raylib.Camera2D
-	accumulator: f32
-
-	engine.init_camera(&camera)
-	raylib.SetTargetFPS(config.CONFIG.target_fps)
-
-	for !raylib.WindowShouldClose() {
-		engine.input_update(&input)
-
-		accumulator += raylib.GetFrameTime()
-
-		for ; accumulator >= config.CONFIG.fixed_timestep;
-		    accumulator -= config.CONFIG.fixed_timestep {
-			fixed_update(w, a, &input, &camera, tilemap, config.CONFIG.fixed_timestep)
-		}
-
-		raylib.BeginDrawing()
-		raylib.BeginMode2D(camera)
-		draw(w, tilemap)
-		raylib.EndMode2D()
-		raylib.EndDrawing()
-	}
-}
-
 // Entry point: sets up the window, assets, world, and runs the main game loop.
 main :: proc() {
+	accumulator: f32 = 0
+
 	raylib.InitWindow(
 		config.CONFIG.window_width,
 		config.CONFIG.window_height,
@@ -138,16 +47,82 @@ main :: proc() {
 	engine.assets_init(&a)
 	defer engine.assets_destroy(&a)
 
+	// tileset: engine.Tileset
+	// if !engine.load_tileset(&a, &tileset, config.ASSET_PATHS.tileset) {
+	// 	panic("Failed to load tileset")
+	// }
+
 	tilemap: engine.Tilemap
-	if !load_game_assets(&a, &tilemap) {
-		panic("Failed to load game assets")
+	if !engine.load_world(&a, &tilemap, config.ASSET_PATHS.tilemap) {
+		panic("Failed to load world")
 	}
+
+	walk_tex, walk_ok := engine.assets_load_texture(&a, config.ASSET_PATHS.walk)
+	if !walk_ok do panic("Failed to load walk texture")
+
+	attack_tex, attack_ok := engine.assets_load_texture(&a, config.ASSET_PATHS.attack)
+	if !attack_ok do panic("Failed to load attack texture")
+
+	engine.assets_register_clip(
+		&a,
+		.Idle,
+		engine.clip_idle_from_walk_grid(
+			walk_tex,
+			engine.PLAYER_DIRECTIONS,
+			engine.WALK_FRAMES_PER_DIRECTION,
+			config.CONFIG.idle_frame_duration,
+		),
+	)
+	engine.assets_register_clip(
+		&a,
+		.Walk,
+		engine.clip_from_directional_grid(
+			walk_tex,
+			engine.PLAYER_DIRECTIONS,
+			engine.WALK_FRAMES_PER_DIRECTION,
+			config.CONFIG.walk_frame_duration,
+		),
+	)
+
+	engine.assets_register_clip(
+		&a,
+		.Attack,
+		engine.clip_from_directional_grid(
+			attack_tex,
+			engine.PLAYER_DIRECTIONS,
+			engine.ATTACK_FRAMES_PER_DIRECTION,
+			config.CONFIG.attack_frame_duration,
+		),
+	)
 
 	w: engine.World
 	engine.world_init(&w)
 	defer engine.world_destroy(&w)
 
+	input: engine.InputState
+
 	spawn_player(&w, &a, {400, 400})
-	run_game_loop(&w, &a, &tilemap)
+	camera: raylib.Camera2D
+	engine.init_camera(&camera)
+	raylib.SetTargetFPS(config.CONFIG.target_fps)
+
+	for !raylib.WindowShouldClose() {
+		engine.input_update(&input)
+
+		dt := raylib.GetFrameTime()
+
+		accumulator += dt
+
+		for ; accumulator >= config.CONFIG.fixed_timestep;
+		    accumulator -= config.CONFIG.fixed_timestep {
+			fixed_update(&w, &a, &input, &camera, &tilemap, config.CONFIG.fixed_timestep)
+		}
+
+		raylib.BeginDrawing()
+		raylib.BeginMode2D(camera)
+		draw(&w, &tilemap)
+		raylib.EndMode2D()
+		raylib.EndDrawing()
+	}
 }
 

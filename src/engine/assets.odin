@@ -6,9 +6,8 @@ import "vendor:raylib"
 
 // Central store for loaded textures and registered animation clips.
 Assets :: struct {
-	textures:            map[string]raylib.Texture2D, // Path-keyed cache of loaded GPU textures.
-	clips:               [AnimationKind]AnimationClip, // Shared character idle, walk, and attack clips.
-	weapon_attack_clips: [WeaponKind]AnimationClip, // Per-weapon overlay shown on the final attack frame.
+	textures: map[string]raylib.Texture2D, // Path-keyed cache of loaded GPU textures.
+	clips:    [AnimationKind]AnimationClip, // One clip per animation kind (idle, walk, etc.).
 }
 
 // Initializes the asset store's texture cache.
@@ -19,9 +18,6 @@ assets_init :: proc(a: ^Assets) {
 // Frees clip frame data and unloads every cached GPU texture.
 assets_destroy :: proc(a: ^Assets) {
 	for &clip in a.clips {
-		delete(clip.frames)
-	}
-	for &clip in a.weapon_attack_clips {
 		delete(clip.frames)
 	}
 
@@ -47,7 +43,7 @@ assets_load_texture :: proc(a: ^Assets, path: string) -> (raylib.Texture2D, bool
 	return tex, true
 }
 
-// Stores a shared character animation clip, freeing any clip it replaces.
+// Stores an animation clip under the given kind, freeing any clip it replaces.
 assets_register_clip :: proc(a: ^Assets, kind: AnimationKind, clip: AnimationClip) {
 	if existing := a.clips[kind]; len(existing.frames) > 0 {
 		fmt.println("[WARN] Frames already exist for this animation kind. Overwritting...")
@@ -57,16 +53,3 @@ assets_register_clip :: proc(a: ^Assets, kind: AnimationKind, clip: AnimationCli
 	a.clips[kind] = clip
 }
 
-// Stores a weapon attack overlay clip, freeing any clip it replaces.
-assets_register_weapon_attack_clip :: proc(
-	a: ^Assets,
-	weapon: WeaponKind,
-	clip: AnimationClip,
-) {
-	if existing := a.weapon_attack_clips[weapon]; len(existing.frames) > 0 {
-		fmt.println("[WARN] Frames already exist for this weapon attack. Overwritting...")
-		fmt.println(weapon)
-		delete(existing.frames)
-	}
-	a.weapon_attack_clips[weapon] = clip
-}

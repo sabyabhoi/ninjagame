@@ -1,24 +1,9 @@
 package config
 
-// File paths for one weapon's attack overlay sprite sheet.
-WeaponAssetPaths :: struct {
-	attack: string,
-}
-
-// Attack sprite sheet paths for each weapon overlay.
-WeaponAssets :: struct {
-	katana:  WeaponAssetPaths,
-	hammer:  WeaponAssetPaths,
-	axe:     WeaponAssetPaths,
-	kunai:   WeaponAssetPaths,
-	net:     WeaponAssetPaths,
-	pickaxe: WeaponAssetPaths,
-}
-
 // File paths for game assets loaded at startup.
 AssetPaths :: struct {
 	walk:    string, // Sprite sheet used for player walk and idle animations.
-	attack:  string, // Sprite sheet used for player attack animation.
+	attack:  string, // Sprite sheet used for player attack animation
 	tileset: string, // Tiled external tileset (.tsx) referenced by the map.
 	tilemap: string, // Tiled map file (.tmx).
 }
@@ -42,14 +27,6 @@ ASSET_PATHS :: AssetPaths {
 	attack  = "res/assets/Actor/CharacterAnimated/NinjaGreen/Separate/Attack.png",
 	tileset = "res/map/TilesetFloor.tsx",
 	tilemap = "res/map/map1.tmx",
-}
-
-WEAPON_ASSETS :: WeaponAssets {
-	katana = {attack = "res/assets/Actor/CharacterAnimated/Weapon/Katana.png"},
-	hammer = {attack = "res/assets/Actor/CharacterAnimated/Weapon/Hammer.png"},
-	axe = {attack = "res/assets/Actor/CharacterAnimated/Weapon/Axe.png"},
-	net = {attack = "res/assets/Actor/CharacterAnimated/Weapon/Net.png"},
-	pickaxe = {attack = "res/assets/Actor/CharacterAnimated/Weapon/Pickaxe.png"},
 }
 
 CONFIG :: Config {

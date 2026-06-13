@@ -144,11 +144,7 @@ animation_apply_initial_frame :: proc(w: ^World, a: ^Assets, entity: Entity) {
 	sprite, sprite_ok := store_get(&w.sprites, entity)
 	if !state_ok || !sprite_ok do return
 
-	clip := assets_get_clip(a, state.kind)
+	clip := &a.clips[state.kind]
 	animation_apply_sprite_frame(sprite, state, clip)
-
-	if overlay, overlay_ok := store_get(&w.weapon_overlays, entity); overlay_ok {
-		overlay.visible = false
-	}
 }
 
