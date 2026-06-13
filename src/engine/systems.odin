@@ -10,6 +10,43 @@ Drawable :: struct {
 	sort_y: f32, // Y position used for back-to-front ordering.
 }
 
+// Computes the on-screen rectangle for a sprite source rect and transform scale.
+sprite_dest_rect :: proc(t: ^Transform, src: raylib.Rectangle) -> raylib.Rectangle {
+	return {
+		x      = t.position.x,
+		y      = t.position.y,
+		width  = src.width * t.scale.x,
+		height = src.height * t.scale.y,
+	}
+}
+
+// Draws a sprite using its source sub-rect scaled by the entity transform.
+draw_sprite :: proc(sprite: ^Sprite, t: ^Transform) {
+	src := sprite.source
+	if src.width == 0 {
+		src = {0, 0, f32(sprite.texture.width), f32(sprite.texture.height)}
+	}
+
+	dest := sprite_dest_rect(t, src)
+	raylib.DrawTexturePro(sprite.texture, src, dest, {0, 0}, 0, sprite.tint)
+}
+
+// Draws a weapon overlay frame into the same on-screen slot as the body sprite.
+draw_weapon_overlay :: proc(overlay: ^WeaponOverlay, t: ^Transform, body_src: raylib.Rectangle) {
+	if !overlay.visible do return
+	if overlay.sprite.source.width <= 0 || overlay.sprite.source.height <= 0 do return
+
+	dest := sprite_dest_rect(t, body_src)
+	raylib.DrawTexturePro(
+		overlay.sprite.texture,
+		overlay.sprite.source,
+		dest,
+		{0, 0},
+		0,
+		overlay.sprite.tint,
+	)
+}
+
 // Advances each entity's position by its velocity scaled by the timestep.
 physics_system :: proc(w: ^World, dt: f32) {
 	for entity, &vel in w.velocities.data {
@@ -40,40 +77,15 @@ render_system :: proc(w: ^World) {
 		t, transform_ok := store_get(&w.transforms, drawable.entity)
 		if !sprite_ok || !transform_ok do continue
 
-		src := sprite.source
-		if src.width == 0 {
-			src = {0, 0, f32(sprite.texture.width), f32(sprite.texture.height)}
+		body_src := sprite.source
+		if body_src.width == 0 {
+			body_src = {0, 0, f32(sprite.texture.width), f32(sprite.texture.height)}
 		}
 
-		dest := raylib.Rectangle {
-			x      = t.position.x,
-			y      = t.position.y,
-			width  = src.width * t.scale.x,
-			height = src.height * t.scale.y,
-		}
+		draw_sprite(sprite, t)
 
-		raylib.DrawTexturePro(sprite.texture, src, dest, {0, 0}, 0, sprite.tint)
-
-		if overlay, overlay_ok := store_get(&w.weapon_overlays, drawable.entity);
-		   overlay_ok && overlay.visible {
-			overlay_src := overlay.sprite.source
-			if overlay_src.width == 0 {
-				overlay_src = {
-					0,
-					0,
-					f32(overlay.sprite.texture.width),
-					f32(overlay.sprite.texture.height),
-				}
-			}
-
-			raylib.DrawTexturePro(
-				overlay.sprite.texture,
-				overlay_src,
-				dest,
-				{0, 0},
-				0,
-				overlay.sprite.tint,
-			)
+		if overlay, overlay_ok := store_get(&w.weapon_overlays, drawable.entity); overlay_ok {
+			draw_weapon_overlay(overlay, t, body_src)
 		}
 	}
 }
