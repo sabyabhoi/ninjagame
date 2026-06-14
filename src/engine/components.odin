@@ -35,3 +35,7 @@ AttackState :: struct {
 	timer: f32,
 }
 
+is_moving :: proc(velocity: ^Velocity) -> bool {
+	return velocity.value.x != 0 || velocity.value.y != 0
+}
+

@@ -99,33 +99,15 @@ select_animation :: proc(w: ^World, entity: Entity, state: ^AnimationState) {
 
 	if _, attacking := store_get(&w.attack_state, entity); attacking {
 		state.kind = .Attack
-	} else if vel, vel_ok := store_get(&w.velocities, entity); vel_ok &&
-	   (vel.value.x != 0 || vel.value.y != 0) {
+	} else if vel, vel_ok := store_get(&w.velocities, entity);
+	   vel_ok && is_moving(vel) {
 		state.kind = .Walk
 	} else {
 		state.kind = .Idle
 	}
 
 	if vel, vel_ok := store_get(&w.velocities, entity); vel_ok {
-		moving := vel.value.x != 0 || vel.value.y != 0
-		if moving {
-			abs_x := math.abs(vel.value.x)
-			abs_y := math.abs(vel.value.y)
-
-			if abs_x >= abs_y {
-				if vel.value.x < 0 {
-					state.direction = .Left
-				} else {
-					state.direction = .Right
-				}
-			} else {
-				if vel.value.y < 0 {
-					state.direction = .Up
-				} else {
-					state.direction = .Down
-				}
-			}
-		}
+		update_entity_direction(vel, entity, state)
 	}
 
 	if state.kind != prev_kind || state.direction != prev_direction {
@@ -134,16 +116,30 @@ select_animation :: proc(w: ^World, entity: Entity, state: ^AnimationState) {
 	}
 }
 
+update_entity_direction :: proc(velocity: ^Velocity, entity: Entity, state: ^AnimationState) {
+	if is_moving(velocity) {
+		abs_x := math.abs(velocity.value.x)
+		abs_y := math.abs(velocity.value.y)
+
+		if abs_x >= abs_y {
+			if velocity.value.x < 0 {
+				state.direction = .Left
+			} else {
+				state.direction = .Right
+			}
+		} else {
+			if velocity.value.y < 0 {
+				state.direction = .Up
+			} else {
+				state.direction = .Down
+			}
+		}
+	}
+}
+
 // Advances the animation timer and applies the current frame to the sprite.
-advance_animation :: proc(
-	w: ^World,
-	a: ^Assets,
-	entity: Entity,
-	state: ^AnimationState,
-	dt: f32,
-) {
+advance_animation :: proc(w: ^World, a: ^Assets, entity: Entity, state: ^AnimationState, dt: f32) {
 	sprite, sprite_ok := store_get(&w.sprites, entity)
-	if !sprite_ok do return
 
 	clip := assets_get_clip(a, state.kind, state.direction)
 	if len(clip.frames) == 0 do return
