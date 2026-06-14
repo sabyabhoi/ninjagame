@@ -23,7 +23,7 @@ spawn_player :: proc(
 	engine.store_add(
 		&w.sprites,
 		player,
-		engine.Sprite{texture = a.clips[.Idle][.Down].texture, tint = raylib.WHITE},
+		engine.Sprite{texture = a.entity_clips[.Idle][.Down].texture, tint = raylib.WHITE},
 	)
 	engine.store_add(
 		&w.animations,

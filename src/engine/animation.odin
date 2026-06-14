@@ -33,7 +33,7 @@ DIRECTION_SHEET_COLUMNS := [Direction]int {
 }
 
 // Builds a single-row, non-directional animation clip from a horizontal sprite strip.
-clip_from_horizontal_strip :: proc(
+create_clip_from_horizontal_strip :: proc(
 	tex: raylib.Texture2D,
 	frame_count: int,
 	duration: f32,
@@ -55,7 +55,7 @@ clip_from_horizontal_strip :: proc(
 }
 
 // Builds one animation clip from a single column of a directional sprite sheet grid.
-clip_from_sheet_column :: proc(
+create_clip_from_sheet_column :: proc(
 	tex: raylib.Texture2D,
 	column: int,
 	total_columns: int,

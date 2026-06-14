@@ -10,7 +10,7 @@ test_clip_from_horizontal_strip :: proc(t: ^testing.T) {
 		width  = 32,
 		height = 8,
 	}
-	clip := clip_from_horizontal_strip(tex, 4, 0.15)
+	clip := create_clip_from_horizontal_strip(tex, 4, 0.15)
 	defer delete(clip.frames)
 
 	testing.expect(t, len(clip.frames) == 4, "expected 4 frames")
@@ -26,7 +26,7 @@ test_clip_from_sheet_column :: proc(t: ^testing.T) {
 		height = 16,
 	}
 	frame_count := 4
-	clip := clip_from_sheet_column(tex, 2, 4, frame_count, frame_count, 0.10)
+	clip := create_clip_from_sheet_column(tex, 2, 4, frame_count, frame_count, 0.10)
 	defer delete(clip.frames)
 
 	testing.expect(t, len(clip.frames) == frame_count, "expected 4 frames")
@@ -43,7 +43,7 @@ test_clip_from_sheet_column_idle :: proc(t: ^testing.T) {
 		width  = 16,
 		height = 16,
 	}
-	clip := clip_from_sheet_column(tex, 1, 4, 4, 1, 0.15)
+	clip := create_clip_from_sheet_column(tex, 1, 4, 4, 1, 0.15)
 	defer delete(clip.frames)
 
 	testing.expect(t, len(clip.frames) == 1, "expected 1 idle frame")

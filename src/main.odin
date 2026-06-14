@@ -1,5 +1,6 @@
 package main
 
+import "core:fmt"
 import "config"
 import "core:strings"
 import "engine"
@@ -60,7 +61,7 @@ register_player_clips :: proc(a: ^engine.Assets) {
 			a,
 			.Idle,
 			dir,
-			engine.clip_from_sheet_column(
+			engine.create_clip_from_sheet_column(
 				walk_spritesheet,
 				column,
 				sheet_columns,
@@ -73,7 +74,7 @@ register_player_clips :: proc(a: ^engine.Assets) {
 			a,
 			.Walk,
 			dir,
-			engine.clip_from_sheet_column(
+			engine.create_clip_from_sheet_column(
 				walk_spritesheet,
 				column,
 				sheet_columns,
@@ -86,7 +87,7 @@ register_player_clips :: proc(a: ^engine.Assets) {
 			a,
 			.Attack,
 			dir,
-			engine.clip_from_sheet_column(
+			engine.create_clip_from_sheet_column(
 				attack_spritesheet,
 				column,
 				sheet_columns,
@@ -96,6 +97,7 @@ register_player_clips :: proc(a: ^engine.Assets) {
 			),
 		)
 	}
+  fmt.println(a)
 }
 
 // Initialises the game world, spawns the player, and configures the camera.
