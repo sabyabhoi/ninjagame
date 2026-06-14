@@ -4,6 +4,7 @@ package config
 AssetPaths :: struct {
 	walk:    string, // Sprite sheet used for player walk and idle animations.
 	attack:  string, // Sprite sheet used for player attack animation
+	weapon:  string, // Sprite sheet used for player weapon
 	tileset: string, // Tiled external tileset (.tsx) referenced by the map.
 	tilemap: string, // Tiled map file (.tmx).
 }
@@ -29,6 +30,7 @@ PlayerConfig :: struct {
 ASSET_PATHS :: AssetPaths {
 	walk    = "res/assets/Actor/CharacterAnimated/NinjaGreen/Separate/Walk.png",
 	attack  = "res/assets/Actor/CharacterAnimated/NinjaGreen/Separate/Attack.png",
+	weapon  = "res/assets/Actor/CharacterAnimated/Weapon/Hammer.png",
 	tileset = "res/map/TilesetFloor.tsx",
 	tilemap = "res/map/map1.tmx",
 }

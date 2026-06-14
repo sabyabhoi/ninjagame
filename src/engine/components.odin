@@ -35,6 +35,10 @@ AttackState :: struct {
 	timer: f32,
 }
 
+EquippedWeapon :: struct {
+	weapon_entity: Entity,
+}
+
 is_moving :: proc(velocity: ^Velocity) -> bool {
 	return velocity.value.x != 0 || velocity.value.y != 0
 }

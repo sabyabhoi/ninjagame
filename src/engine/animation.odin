@@ -12,9 +12,11 @@ AnimationClip :: struct {
 
 // Named animation clips available to entities.
 AnimationKind :: enum {
+	None,
 	Idle,
 	Walk,
 	Attack,
+	AttackWeapon,
 }
 
 // Logical facing direction for animated entities.
@@ -135,7 +137,13 @@ update_entity_direction :: proc(velocity: ^Velocity, entity: Entity, state: ^Ani
 }
 
 // Advances the animation timer and applies the current frame to the sprite.
-entity_advance_animation :: proc(w: ^World, a: ^Assets, entity: Entity, state: ^AnimationState, dt: f32) {
+entity_advance_animation :: proc(
+	w: ^World,
+	a: ^Assets,
+	entity: Entity,
+	state: ^AnimationState,
+	dt: f32,
+) {
 	sprite, sprite_ok := store_get(&w.sprites, entity)
 
 	clip := assets_get_clip(a, state.kind, state.direction)

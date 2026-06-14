@@ -47,6 +47,9 @@ register_player_anim_clips :: proc(a: ^engine.Assets) {
 	attack_spritesheet, attack_ok := engine.assets_load_texture(a, config.ASSET_PATHS.attack)
 	if !attack_ok do panic("Failed to load attack texture")
 
+	weapon_spritesheet, weapon_ok := engine.assets_load_texture(a, config.ASSET_PATHS.weapon)
+	if !weapon_ok do panic("Failed to load weapon texture")
+
 	walk_frames_per_direction := 4
 	attack_frames_per_direction := 4
 	sheet_columns := 4
@@ -86,6 +89,20 @@ register_player_anim_clips :: proc(a: ^engine.Assets) {
 			dir,
 			engine.create_clip_from_sheet_column(
 				attack_spritesheet,
+				column,
+				sheet_columns,
+				attack_frames_per_direction,
+				attack_frames_per_direction,
+				config.CONFIG.player.attack_frame_duration,
+			),
+		)
+
+		engine.assets_register_clip(
+			a,
+			.AttackWeapon,
+			dir,
+			engine.create_clip_from_sheet_column(
+				weapon_spritesheet,
 				column,
 				sheet_columns,
 				attack_frames_per_direction,

@@ -15,6 +15,7 @@ World :: struct {
 	animations:        ComponentStore(AnimationState), // Current clip, frame, and playback timer.
 	player_controlled: ComponentStore(PlayerControlled), // Entities driven by keyboard input.
 	attack_state:      ComponentStore(AttackState), // Entities currently in attacking state or not
+	equipped_weapon:            ComponentStore(EquippedWeapon),
 }
 
 // Allocates and initializes all component maps and bookkeeping for a fresh world.
@@ -27,6 +28,7 @@ world_init :: proc(w: ^World) {
 	store_init(&w.animations)
 	store_init(&w.player_controlled)
 	store_init(&w.attack_state)
+	store_init(&w.equipped_weapon)
 }
 
 // Frees all component maps and bookkeeping owned by the world.
@@ -38,6 +40,7 @@ world_destroy :: proc(w: ^World) {
 	store_destroy(&w.animations)
 	store_destroy(&w.player_controlled)
 	store_destroy(&w.attack_state)
+	store_destroy(&w.equipped_weapon)
 }
 
 // Returns a new entity id, reusing a freed id when one is available.
@@ -58,6 +61,7 @@ entity_destroy :: proc(w: ^World, e: Entity) {
 	store_remove(&w.animations, e)
 	store_remove(&w.player_controlled, e)
 	store_remove(&w.attack_state, e)
+	store_remove(&w.equipped_weapon, e)
 	append(&w.free_list, e)
 }
 
