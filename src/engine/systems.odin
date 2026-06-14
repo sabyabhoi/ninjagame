@@ -68,9 +68,7 @@ attack_system :: proc(w: ^World, a: ^Assets, dt: f32) {
 		attack.timer += dt
 
 		state, ok := store_get(&w.animations, entity)
-		if !ok {
-			panic("Animation not found for player")
-		}
+		if !ok do panic("Animation not found for entity")
 
 		clip := assets_get_clip(a, .Attack, state.direction)
 		if attack.timer >= f32(len(clip.frames)) * clip.duration {
