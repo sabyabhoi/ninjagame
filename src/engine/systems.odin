@@ -55,22 +55,11 @@ render_system :: proc(w: ^World) {
 	}
 }
 
-// Advances animation timers and applies the resulting frame to each animated sprite.
+// Selects clips from gameplay state, then advances frames for each animated entity.
 animation_system :: proc(w: ^World, a: ^Assets, dt: f32) {
 	for entity, &state in w.animations.data {
-		sprite, sprite_ok := store_get(&w.sprites, entity)
-		if !sprite_ok do continue
-
-		clip := assets_get_clip(a, state.kind, state.direction)
-		if len(clip.frames) == 0 do continue
-
-		state.timer += dt
-		for state.timer >= clip.duration {
-			state.timer -= clip.duration
-			state.frame_index = (state.frame_index + 1) % len(clip.frames)
-		}
-
-		animation_apply_sprite_frame(sprite, &state, clip)
+		select_animation(w, entity, &state)
+		advance_animation(w, a, entity, &state, dt)
 	}
 }
 
@@ -85,9 +74,6 @@ attack_system :: proc(w: ^World, a: ^Assets, dt: f32) {
 
 		clip := assets_get_clip(a, .Attack, state.direction)
 		if attack.timer >= f32(len(clip.frames)) * clip.duration {
-			state.kind = .Idle
-			state.frame_index = 0
-			state.timer = 0
 			store_remove(&w.attack_state, entity)
 		}
 	}

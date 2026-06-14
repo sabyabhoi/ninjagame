@@ -68,7 +68,7 @@ lives. Components stay as pure data. See [systems.md](systems.md).
 
 ## The game loop
 
-The whole program is driven by the loop in `main` (`src/main.odin`). Player-specific systems (`player_input_system`, `player_movement_system`, `player_attack_system`) run from `src/player.odin`; generic engine systems live in `src/engine/systems.odin`. In order:
+The whole program is driven by the loop in `main` (`src/main.odin`). Player-specific input systems (`player_movement_input_system`, `player_attack_input_system`) run from `src/player.odin`; generic engine systems live in `src/engine/systems.odin`. In order:
 
 1. **Setup**
    - Open the window (size/title come from `CONFIG`).
@@ -113,12 +113,11 @@ machine still only steps logic 60 times a second.
 
 ```odin
 fixed_update :: proc(w: ^engine.World, a: ^engine.Assets, input: ^engine.InputState, dt: f32) {
-    player_input_system(w, input)          // 1. turn key presses into velocity (main)
-    player_attack_system(w, input)         // 2. start attack animation on key press (main)
-    player_movement_system(w)              // 3. pick Idle/Walk + facing direction (main)
-    engine.attack_system(w, a, dt)         // 4. end attack when clip finishes
-    engine.animation_system(w, a, dt)      // 5. advance animation frames over time
-    engine.physics_system(w, dt)           // 6. move entities by their velocity
+    player_movement_input_system(w, input) // 1. turn key presses into velocity (main)
+    player_attack_input_system(w, input)   // 2. start attack on key press (main)
+    engine.attack_system(w, a, dt)         // 3. end attack when clip finishes
+    engine.animation_system(w, a, dt)      // 4. select clip + advance frames
+    engine.physics_system(w, dt)           // 5. move entities by their velocity
 }
 ```
 

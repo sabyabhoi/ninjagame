@@ -1,5 +1,6 @@
 package engine
 
+import "core:math"
 import "vendor:raylib"
 
 // Sprite-sheet animation data: frame rects and per-frame timing.
@@ -89,6 +90,71 @@ animation_apply_sprite_frame :: proc(
 
 	sprite.texture = clip.texture
 	sprite.source = clip.frames[state.frame_index]
+}
+
+// Chooses animation kind and facing from gameplay state (velocity, attack).
+select_animation :: proc(w: ^World, entity: Entity, state: ^AnimationState) {
+	prev_kind := state.kind
+	prev_direction := state.direction
+
+	if _, attacking := store_get(&w.attack_state, entity); attacking {
+		state.kind = .Attack
+	} else if vel, vel_ok := store_get(&w.velocities, entity); vel_ok &&
+	   (vel.value.x != 0 || vel.value.y != 0) {
+		state.kind = .Walk
+	} else {
+		state.kind = .Idle
+	}
+
+	if vel, vel_ok := store_get(&w.velocities, entity); vel_ok {
+		moving := vel.value.x != 0 || vel.value.y != 0
+		if moving {
+			abs_x := math.abs(vel.value.x)
+			abs_y := math.abs(vel.value.y)
+
+			if abs_x >= abs_y {
+				if vel.value.x < 0 {
+					state.direction = .Left
+				} else {
+					state.direction = .Right
+				}
+			} else {
+				if vel.value.y < 0 {
+					state.direction = .Up
+				} else {
+					state.direction = .Down
+				}
+			}
+		}
+	}
+
+	if state.kind != prev_kind || state.direction != prev_direction {
+		state.frame_index = 0
+		state.timer = 0
+	}
+}
+
+// Advances the animation timer and applies the current frame to the sprite.
+advance_animation :: proc(
+	w: ^World,
+	a: ^Assets,
+	entity: Entity,
+	state: ^AnimationState,
+	dt: f32,
+) {
+	sprite, sprite_ok := store_get(&w.sprites, entity)
+	if !sprite_ok do return
+
+	clip := assets_get_clip(a, state.kind, state.direction)
+	if len(clip.frames) == 0 do return
+
+	state.timer += dt
+	for state.timer >= clip.duration {
+		state.timer -= clip.duration
+		state.frame_index = (state.frame_index + 1) % len(clip.frames)
+	}
+
+	animation_apply_sprite_frame(sprite, state, clip)
 }
 
 // Sets an entity's sprite to the first frame of its current animation clip.

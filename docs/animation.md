@@ -67,13 +67,13 @@ sprite.source = clip.frames[state.frame_index]
 
 Each fixed step:
 
-1. `player_movement_system` sets `kind` (Idle/Walk) and `direction` (facing)
-   from the player's velocity. See [systems.md](systems.md).
-2. `animation_system` advances `frame_index` using the timer, then writes the
-   resulting frame into the sprite.
+1. `animation_system` calls `select_animation` to set `kind` (Idle/Walk/Attack)
+   and `direction` from `Velocity` and `AttackState`. See [systems.md](systems.md).
+2. `animation_system` calls `advance_animation` to tick `frame_index` using the
+   timer, then write the resulting frame into the sprite.
 
-So velocity drives the choice of animation, and elapsed time drives the
-flipping between frames.
+Gameplay state drives the choice of animation; elapsed time drives flipping
+between frames.
 
 ## Tests
 

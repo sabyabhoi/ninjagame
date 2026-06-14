@@ -4,7 +4,7 @@ Systems are the functions that make things happen. Each one loops over the
 entities that have the components it cares about and updates them. They run in a
 fixed order every logic step (see [architecture.md](architecture.md)).
 
-## player_input_system (`world.odin`)
+## player_movement_input_system (`player.odin`)
 
 Turns key presses into movement. It looks at every entity tagged
 `PlayerControlled` and sets its `Velocity` based on the keys currently held.
@@ -20,44 +20,38 @@ if .MoveUp    in input.held do vel.value.y -= CONFIG.player_speed
 if .MoveDown  in input.held do vel.value.y += CONFIG.player_speed
 ```
 
-## player_movement_system (`player.odin`)
+## player_attack_input_system (`player.odin`)
 
-Decides *which* animation a player entity should be playing, based on its
-velocity:
+Starts an attack when the player presses the attack key. It only writes
+`AttackState`; it does not touch animation data directly.
 
-- Moving -> `kind = .Walk`; not moving -> `kind = .Idle`.
-- The facing direction is chosen from the larger velocity axis: mostly
-  horizontal -> left/right, mostly vertical -> up/down.
-- When the animation or direction changes, `frame_index` and `timer` reset to 0
-  so the new animation starts cleanly.
-
-This only *selects* the animation. It does not advance frames.
+- Pressing attack adds an `AttackState` entry with `timer = 0`.
+- If the entity is already attacking, the press is ignored.
 
 ## animation_system (`systems.odin`)
 
-Advances animation frames over time for **every** entity with an
-`AnimationState` (players and any future NPCs).
+Handles animation for **every** entity with an `AnimationState` (players and
+any future NPCs). Each tick it runs two internal steps per entity:
 
-- Looks up the clip for `state.kind` and `state.direction`.
-- Adds `dt` to the state's `timer`.
-- Each time the timer passes the clip's `duration`, it advances to the next
-  frame, wrapping around with modulo.
-- Finally it copies the current frame's rectangle into the entity's `Sprite`
-  so the renderer shows the right image.
+1. **`select_animation`** — picks `kind` and `direction` from gameplay state:
+   - Has `AttackState` → `.Attack`
+   - Else moving (`Velocity` non-zero) → `.Walk` + facing from dominant axis
+   - Else → `.Idle`
+   - When kind or direction changes, `frame_index` and `timer` reset to 0.
+2. **`advance_animation`** — adds `dt` to the timer, advances `frame_index`
+   through the clip, and copies the current frame into the entity's `Sprite`.
 
 ```odin
-clip := assets_get_clip(a, state.kind, state.direction)
-state.timer += dt
-for state.timer >= clip.duration {
-    state.timer -= clip.duration
-    state.frame_index = (state.frame_index + 1) % len(clip.frames)
-}
+select_animation(w, entity, &state)
+advance_animation(w, a, entity, &state, dt)
 ```
 
 ## attack_system (`systems.odin`)
 
-Ends the attack animation when the clip has played through. Duration is derived
-from the registered attack clip's frame count and per-frame duration.
+Tracks attack duration and removes `AttackState` when the clip has played
+through. Duration is derived from the registered attack clip's frame count and
+per-frame duration. Animation selection picks Idle/Walk on the same tick after
+removal.
 
 ## physics_system (`world.odin`)
 
@@ -92,12 +86,13 @@ Two steps:
 A single logic step flows like this:
 
 ```
-keys held ─▶ player_input_system ─▶ Velocity
-                                        │
-Velocity ─▶ player_movement_system ─▶ AnimationState (kind + direction)
-                                        │
-AnimationState + dt ─▶ animation_system ─▶ Sprite (current frame)
-                                        │
+keys held ─▶ player_movement_input_system ─▶ Velocity
+attack press ─▶ player_attack_input_system ─▶ AttackState
+                                                    │
+AttackState + dt ─▶ attack_system ─▶ AttackState (removed when done)
+                                                    │
+Velocity + AttackState ─▶ animation_system ─▶ AnimationState + Sprite
+                                                    │
 Velocity + dt ─▶ physics_system ─▶ Transform (new position)
 
 later, in draw:

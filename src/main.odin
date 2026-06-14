@@ -14,9 +14,8 @@ fixed_update :: proc(
 	tilemap: ^engine.Tilemap,
 	dt: f32,
 ) {
-	player_input_system(w, input)
-	player_attack_system(w, input)
-	player_movement_system(w)
+	player_movement_input_system(w, input)
+	player_attack_input_system(w, input)
 
 	engine.attack_system(w, a, dt)
 	engine.animation_system(w, a, dt)
