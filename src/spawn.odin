@@ -16,7 +16,7 @@ spawn_player :: proc(
 		player,
 		engine.Transform {
 			position = position,
-			scale = {config.CONFIG.player_scale, config.CONFIG.player_scale},
+			scale = {config.CONFIG.player.scale, config.CONFIG.player.scale},
 		},
 	)
 	engine.store_add(&w.velocities, player, engine.Velocity{})
@@ -25,11 +25,7 @@ spawn_player :: proc(
 		player,
 		engine.Sprite{texture = a.entity_clips[.Idle][.Down].texture, tint = raylib.WHITE},
 	)
-	engine.store_add(
-		&w.animations,
-		player,
-		engine.AnimationState{kind = .Idle, direction = .Down},
-	)
+	engine.store_add(&w.animations, player, engine.AnimationState{kind = .Idle, direction = .Down})
 	engine.store_add(&w.player_controlled, player, engine.PlayerControlled{})
 	engine.animation_apply_initial_frame(w, a, player)
 	return player

@@ -64,7 +64,7 @@ register_player_anim_clips :: proc(a: ^engine.Assets) {
 				sheet_columns,
 				walk_frames_per_direction,
 				1,
-				config.CONFIG.idle_frame_duration,
+				config.CONFIG.player.idle_frame_duration,
 			),
 		)
 		engine.assets_register_clip(
@@ -77,7 +77,7 @@ register_player_anim_clips :: proc(a: ^engine.Assets) {
 				sheet_columns,
 				walk_frames_per_direction,
 				walk_frames_per_direction,
-				config.CONFIG.walk_frame_duration,
+				config.CONFIG.player.walk_frame_duration,
 			),
 		)
 		engine.assets_register_clip(
@@ -90,7 +90,7 @@ register_player_anim_clips :: proc(a: ^engine.Assets) {
 				sheet_columns,
 				attack_frames_per_direction,
 				attack_frames_per_direction,
-				config.CONFIG.attack_frame_duration,
+				config.CONFIG.player.attack_frame_duration,
 			),
 		)
 	}

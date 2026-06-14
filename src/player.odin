@@ -21,10 +21,10 @@ player_movement_input_system :: proc(
 
 	vel.value = {0, 0}
 
-	if .MoveLeft in input.held do vel.value.x -= config.CONFIG.player_speed
-	if .MoveRight in input.held do vel.value.x += config.CONFIG.player_speed
-	if .MoveUp in input.held do vel.value.y -= config.CONFIG.player_speed
-	if .MoveDown in input.held do vel.value.y += config.CONFIG.player_speed
+	if .MoveLeft in input.held do vel.value.x -= config.CONFIG.player.speed
+	if .MoveRight in input.held do vel.value.x += config.CONFIG.player.speed
+	if .MoveUp in input.held do vel.value.y -= config.CONFIG.player.speed
+	if .MoveDown in input.held do vel.value.y += config.CONFIG.player.speed
 }
 
 // Starts an attack when the player presses the attack key.
