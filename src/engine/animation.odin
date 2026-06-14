@@ -94,27 +94,14 @@ animation_apply_sprite_frame :: proc(
 	sprite.source = clip.frames[state.frame_index]
 }
 
-// Chooses animation kind and facing from gameplay state (velocity, attack).
-entity_update_animation_state :: proc(w: ^World, entity: Entity, state: ^AnimationState) {
-	prev_kind := state.kind
-	prev_direction := state.direction
-
-	if _, attacking := store_get(&w.attack_state, entity); attacking {
-		state.kind = .Attack
-	} else if vel, vel_ok := store_get(&w.velocities, entity); vel_ok && is_moving(vel) {
-		state.kind = .Walk
-	} else {
-		state.kind = .Idle
-	}
-
-	if vel, vel_ok := store_get(&w.velocities, entity); vel_ok && is_moving(vel) {
-		update_entity_direction(vel, entity, state)
-	}
-
-	if state.kind != prev_kind || state.direction != prev_direction {
+// Sets the active clip and facing, resetting playback when either changes.
+animation_set_state :: proc(state: ^AnimationState, kind: AnimationKind, dir: Direction) {
+	if state.kind != kind || state.direction != dir {
 		state.frame_index = 0
 		state.timer = 0
 	}
+	state.kind = kind
+	state.direction = dir
 }
 
 update_entity_direction :: proc(velocity: ^Velocity, entity: Entity, state: ^AnimationState) {

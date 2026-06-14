@@ -17,6 +17,8 @@ fixed_update :: proc(
 	player_input_system(w, input)
 
 	engine.attack_system(w, a, dt)
+	animation_policy_system(w)
+	weapon_sync_system(w)
 	engine.animation_system(w, a, dt)
 	engine.physics_system(w, dt)
 	engine.update_camera(w, tilemap, camera)

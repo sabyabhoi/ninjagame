@@ -42,3 +42,34 @@ player_attack_input_system :: proc(
 	}
 }
 
+// Dispatch: each entity's own policy chooses its clip. Engine stays generic.
+animation_policy_system :: proc(w: ^engine.World) {
+	for entity, &state in w.animations.data {
+		switch state.policy {
+		case .Manual:
+		case .Locomotion:
+			player_locomotion_policy(w, entity, &state)
+		}
+	}
+}
+
+// Velocity + attack_state -> Idle/Walk/Attack + facing.
+player_locomotion_policy :: proc(
+	w: ^engine.World,
+	entity: engine.Entity,
+	state: ^engine.AnimationState,
+) {
+	dir := state.direction
+	kind: engine.AnimationKind = .Idle
+
+	if _, attacking := engine.store_get(&w.attack_state, entity); attacking {
+		kind = .Attack
+	} else if vel, ok := engine.store_get(&w.velocities, entity); ok && engine.is_moving(vel) {
+		kind = .Walk
+		engine.update_entity_direction(vel, entity, state)
+		dir = state.direction
+	}
+
+	engine.animation_set_state(state, kind, dir)
+}
+

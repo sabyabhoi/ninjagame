@@ -30,7 +30,11 @@ spawn_player :: proc(
 		engine.EquippedWeapon{weapon_entity = weapon_entity},
 	)
 
-	engine.store_add(&w.animations, player, engine.AnimationState{kind = .Idle, direction = .Down})
+	engine.store_add(
+		&w.animations,
+		player,
+		engine.AnimationState{policy = .Locomotion, kind = .Idle, direction = .Down},
+	)
 	engine.store_add(&w.player_controlled, player, engine.PlayerControlled{})
 	engine.animation_apply_initial_frame(w, a, player)
 	return player
