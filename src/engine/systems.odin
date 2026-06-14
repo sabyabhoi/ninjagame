@@ -58,8 +58,8 @@ render_system :: proc(w: ^World) {
 // Selects clips from gameplay state, then advances frames for each animated entity.
 animation_system :: proc(w: ^World, a: ^Assets, dt: f32) {
 	for entity, &state in w.animations.data {
-		select_animation(w, entity, &state)
-		advance_animation(w, a, entity, &state, dt)
+		entity_update_animation_state(w, entity, &state)
+		entity_advance_animation(w, a, entity, &state, dt)
 	}
 }
 

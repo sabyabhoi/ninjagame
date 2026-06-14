@@ -93,20 +93,19 @@ animation_apply_sprite_frame :: proc(
 }
 
 // Chooses animation kind and facing from gameplay state (velocity, attack).
-select_animation :: proc(w: ^World, entity: Entity, state: ^AnimationState) {
+entity_update_animation_state :: proc(w: ^World, entity: Entity, state: ^AnimationState) {
 	prev_kind := state.kind
 	prev_direction := state.direction
 
 	if _, attacking := store_get(&w.attack_state, entity); attacking {
 		state.kind = .Attack
-	} else if vel, vel_ok := store_get(&w.velocities, entity);
-	   vel_ok && is_moving(vel) {
+	} else if vel, vel_ok := store_get(&w.velocities, entity); vel_ok && is_moving(vel) {
 		state.kind = .Walk
 	} else {
 		state.kind = .Idle
 	}
 
-	if vel, vel_ok := store_get(&w.velocities, entity); vel_ok {
+	if vel, vel_ok := store_get(&w.velocities, entity); vel_ok && is_moving(vel) {
 		update_entity_direction(vel, entity, state)
 	}
 
@@ -117,28 +116,26 @@ select_animation :: proc(w: ^World, entity: Entity, state: ^AnimationState) {
 }
 
 update_entity_direction :: proc(velocity: ^Velocity, entity: Entity, state: ^AnimationState) {
-	if is_moving(velocity) {
-		abs_x := math.abs(velocity.value.x)
-		abs_y := math.abs(velocity.value.y)
+	abs_x := math.abs(velocity.value.x)
+	abs_y := math.abs(velocity.value.y)
 
-		if abs_x >= abs_y {
-			if velocity.value.x < 0 {
-				state.direction = .Left
-			} else {
-				state.direction = .Right
-			}
+	if abs_x >= abs_y {
+		if velocity.value.x < 0 {
+			state.direction = .Left
 		} else {
-			if velocity.value.y < 0 {
-				state.direction = .Up
-			} else {
-				state.direction = .Down
-			}
+			state.direction = .Right
+		}
+	} else {
+		if velocity.value.y < 0 {
+			state.direction = .Up
+		} else {
+			state.direction = .Down
 		}
 	}
 }
 
 // Advances the animation timer and applies the current frame to the sprite.
-advance_animation :: proc(w: ^World, a: ^Assets, entity: Entity, state: ^AnimationState, dt: f32) {
+entity_advance_animation :: proc(w: ^World, a: ^Assets, entity: Entity, state: ^AnimationState, dt: f32) {
 	sprite, sprite_ok := store_get(&w.sprites, entity)
 
 	clip := assets_get_clip(a, state.kind, state.direction)
