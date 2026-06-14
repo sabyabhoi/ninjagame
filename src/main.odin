@@ -1,6 +1,5 @@
 package main
 
-import "core:fmt"
 import "config"
 import "core:strings"
 import "engine"
@@ -43,7 +42,7 @@ load_tilemap :: proc(a: ^engine.Assets) -> engine.Tilemap {
 }
 
 // Registers player animation clips (idle, walk, attack) for all directions.
-register_player_clips :: proc(a: ^engine.Assets) {
+register_player_anim_clips :: proc(a: ^engine.Assets) {
 	walk_spritesheet, walk_ok := engine.assets_load_texture(a, config.ASSET_PATHS.walk)
 	if !walk_ok do panic("Failed to load walk texture")
 
@@ -97,7 +96,6 @@ register_player_clips :: proc(a: ^engine.Assets) {
 			),
 		)
 	}
-  fmt.println(a)
 }
 
 // Initialises the game world, spawns the player, and configures the camera.
@@ -166,7 +164,7 @@ main :: proc() {
 	defer engine.assets_destroy(&a)
 
 	tilemap := load_tilemap(&a)
-	register_player_clips(&a)
+	register_player_anim_clips(&a)
 
 	w: engine.World
 	defer engine.world_destroy(&w)
