@@ -26,3 +26,4 @@ weapon_sync_system :: proc(w: ^engine.World) {
 		}
 	}
 }
+

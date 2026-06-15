@@ -15,7 +15,7 @@ World :: struct {
 	animations:        ComponentStore(AnimationState), // Current clip, frame, and playback timer.
 	player_controlled: ComponentStore(PlayerControlled), // Entities driven by keyboard input.
 	attack_state:      ComponentStore(AttackState), // Entities currently in attacking state or not
-	equipped_weapon:            ComponentStore(EquippedWeapon),
+	equipped_weapon:   ComponentStore(EquippedWeapon),
 }
 
 // Allocates and initializes all component maps and bookkeeping for a fresh world.

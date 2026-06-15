@@ -24,3 +24,4 @@ store_get :: proc(s: ^ComponentStore($T), e: Entity) -> (^T, bool) {
 	v, ok := &s.data[e]
 	return v, ok
 }
+
