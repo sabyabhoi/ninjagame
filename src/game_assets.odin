@@ -82,6 +82,8 @@ game_assets_init :: proc(ga: ^GameAssets, a: ^engine.Assets) {
 			attack_frames_per_direction,
 			config.CONFIG.player.attack_frame_duration,
 		)
+
+		ga.player.clips[.Attack][dir].loop = false
 		// The swing plays once and holds its final frame; without this it would
 		// loop back to the start frame for one tick before being hidden.
 		ga.weapon.clips[.Attacking][dir].loop = false
@@ -102,3 +104,4 @@ game_assets_destroy :: proc(ga: ^GameAssets) {
 		}
 	}
 }
+
