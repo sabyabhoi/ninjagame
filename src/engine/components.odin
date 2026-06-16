@@ -23,23 +23,16 @@ Sprite :: struct {
 // Marker component: entity receives player input each tick.
 PlayerControlled :: struct {}
 
-// Which selection rule chooses this entity's clip each tick.
-AnimationPolicy :: enum {
-	Manual, // zero value: dispatch leaves state alone (e.g. weapon mirrors its owner)
-	Locomotion, // velocity + attack_state -> Idle/Walk/Attack + facing
+// Logical facing direction for entities that orient their sprites.
+Facing :: struct {
+	direction: Direction,
 }
 
 // Per-entity playback state for the currently active animation clip.
 AnimationState :: struct {
-	policy:      AnimationPolicy, // how kind/direction get chosen (Manual by default)
-	kind:        AnimationKind, // Which clip (idle, walk, etc.) is playing.
-	direction:   Direction, // Facing direction for clip lookup.
-	frame_index: int, // Current frame within the active clip.
-	timer:       f32, // Elapsed time toward advancing to the next frame.
-}
-
-AttackState :: struct {
-	timer: f32,
+	clip:        ^AnimationClip,
+	frame_index: int,
+	timer:       f32,
 }
 
 EquippedWeapon :: struct {
@@ -49,4 +42,3 @@ EquippedWeapon :: struct {
 is_moving :: proc(velocity: ^Velocity) -> bool {
 	return velocity.value.x != 0 || velocity.value.y != 0
 }
-

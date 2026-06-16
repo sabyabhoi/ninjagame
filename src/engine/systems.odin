@@ -56,23 +56,8 @@ render_system :: proc(w: ^World) {
 }
 
 // Advances frames for each animated entity (clip selection is handled elsewhere).
-animation_system :: proc(w: ^World, a: ^Assets, dt: f32) {
+animation_system :: proc(w: ^World, dt: f32) {
 	for entity, &state in w.animations.data {
-		entity_advance_animation(w, a, entity, &state, dt)
+		entity_advance_animation(w, entity, &state, dt)
 	}
 }
-
-attack_system :: proc(w: ^World, a: ^Assets, dt: f32) {
-	for entity, &attack in w.attack_state.data {
-		attack.timer += dt
-
-		state, ok := store_get(&w.animations, entity)
-		if !ok do panic("Animation not found for entity")
-
-		clip := assets_get_clip(a, .Attack, state.direction)
-		if attack.timer >= f32(len(clip.frames)) * clip.duration {
-			store_remove(&w.attack_state, entity)
-		}
-	}
-}
-

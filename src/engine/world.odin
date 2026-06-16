@@ -13,8 +13,10 @@ World :: struct {
 	velocities:        ComponentStore(Velocity), // Movement speed in pixels per second.
 	sprites:           ComponentStore(Sprite), // Texture and source rect used for rendering.
 	animations:        ComponentStore(AnimationState), // Current clip, frame, and playback timer.
+	facings:           ComponentStore(Facing), // Logical facing for directional sprites.
 	player_controlled: ComponentStore(PlayerControlled), // Entities driven by keyboard input.
-	attack_state:      ComponentStore(AttackState), // Entities currently in attacking state or not
+	player_anim:       ComponentStore(StateMachine(PlayerAnimState)), // Player animation FSM.
+	weapon_anim:       ComponentStore(StateMachine(WeaponAnimState)), // Weapon animation FSM.
 	equipped_weapon:   ComponentStore(EquippedWeapon),
 }
 
@@ -26,8 +28,10 @@ world_init :: proc(w: ^World) {
 	store_init(&w.velocities)
 	store_init(&w.sprites)
 	store_init(&w.animations)
+	store_init(&w.facings)
 	store_init(&w.player_controlled)
-	store_init(&w.attack_state)
+	store_init(&w.player_anim)
+	store_init(&w.weapon_anim)
 	store_init(&w.equipped_weapon)
 }
 
@@ -38,8 +42,10 @@ world_destroy :: proc(w: ^World) {
 	store_destroy(&w.velocities)
 	store_destroy(&w.sprites)
 	store_destroy(&w.animations)
+	store_destroy(&w.facings)
 	store_destroy(&w.player_controlled)
-	store_destroy(&w.attack_state)
+	store_destroy(&w.player_anim)
+	store_destroy(&w.weapon_anim)
 	store_destroy(&w.equipped_weapon)
 }
 
@@ -59,9 +65,10 @@ entity_destroy :: proc(w: ^World, e: Entity) {
 	store_remove(&w.velocities, e)
 	store_remove(&w.sprites, e)
 	store_remove(&w.animations, e)
+	store_remove(&w.facings, e)
 	store_remove(&w.player_controlled, e)
-	store_remove(&w.attack_state, e)
+	store_remove(&w.player_anim, e)
+	store_remove(&w.weapon_anim, e)
 	store_remove(&w.equipped_weapon, e)
 	append(&w.free_list, e)
 }
-

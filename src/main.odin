@@ -8,18 +8,16 @@ import "vendor:raylib"
 // Runs one fixed-timestep simulation tick: input, animation, and physics systems.
 fixed_update :: proc(
 	w: ^engine.World,
-	a: ^engine.Assets,
+	ga: ^GameAssets,
 	input: ^engine.InputState,
 	camera: ^raylib.Camera2D,
 	tilemap: ^engine.Tilemap,
 	dt: f32,
 ) {
 	player_input_system(w, input)
-
-	engine.attack_system(w, a, dt)
-	animation_policy_system(w)
-	weapon_sync_system(w)
-	engine.animation_system(w, a, dt)
+	player_anim_system(w, ga, input, dt)
+	weapon_anim_system(w, ga, dt)
+	engine.animation_system(w, dt)
 	engine.physics_system(w, dt)
 	engine.update_camera(w, tilemap, camera)
 }
@@ -41,84 +39,10 @@ load_tilemap :: proc(a: ^engine.Assets) -> engine.Tilemap {
 	return tilemap
 }
 
-// Registers player animation clips (idle, walk, attack) for all directions.
-register_player_anim_clips :: proc(a: ^engine.Assets) {
-	walk_spritesheet, walk_ok := engine.assets_load_texture(a, config.ASSET_PATHS.walk)
-	if !walk_ok do panic("Failed to load walk texture")
-
-	attack_spritesheet, attack_ok := engine.assets_load_texture(a, config.ASSET_PATHS.attack)
-	if !attack_ok do panic("Failed to load attack texture")
-
-	weapon_spritesheet, weapon_ok := engine.assets_load_texture(a, config.ASSET_PATHS.weapon)
-	if !weapon_ok do panic("Failed to load weapon texture")
-
-	walk_frames_per_direction := 4
-	attack_frames_per_direction := 4
-	sheet_columns := 4
-
-	for dir in engine.Direction {
-		column := engine.DIRECTION_SHEET_COLUMNS[dir]
-
-		engine.assets_register_clip(
-			a,
-			.Idle,
-			dir,
-			engine.create_clip_from_sheet_column(
-				walk_spritesheet,
-				column,
-				sheet_columns,
-				walk_frames_per_direction,
-				1,
-				config.CONFIG.player.idle_frame_duration,
-			),
-		)
-		engine.assets_register_clip(
-			a,
-			.Walk,
-			dir,
-			engine.create_clip_from_sheet_column(
-				walk_spritesheet,
-				column,
-				sheet_columns,
-				walk_frames_per_direction,
-				walk_frames_per_direction,
-				config.CONFIG.player.walk_frame_duration,
-			),
-		)
-		engine.assets_register_clip(
-			a,
-			.Attack,
-			dir,
-			engine.create_clip_from_sheet_column(
-				attack_spritesheet,
-				column,
-				sheet_columns,
-				attack_frames_per_direction,
-				attack_frames_per_direction,
-				config.CONFIG.player.attack_frame_duration,
-			),
-		)
-
-		engine.assets_register_clip(
-			a,
-			.AttackWeapon,
-			dir,
-			engine.create_clip_from_sheet_column(
-				weapon_spritesheet,
-				column,
-				sheet_columns,
-				attack_frames_per_direction,
-				attack_frames_per_direction,
-				config.CONFIG.player.attack_frame_duration,
-			),
-		)
-	}
-}
-
 // Initialises the game world, spawns the player, and configures the camera.
-init_game :: proc(w: ^engine.World, a: ^engine.Assets, camera: ^raylib.Camera2D) {
+init_game :: proc(w: ^engine.World, ga: ^GameAssets, camera: ^raylib.Camera2D) {
 	engine.world_init(w)
-	spawn_player(w, a, {400, 400})
+	spawn_player(w, ga, {400, 400})
 	engine.init_camera(camera)
 	raylib.SetTargetFPS(config.CONFIG.target_fps)
 }
@@ -127,7 +51,7 @@ init_game :: proc(w: ^engine.World, a: ^engine.Assets, camera: ^raylib.Camera2D)
 process_frame :: proc(
 	accumulator: ^f32,
 	w: ^engine.World,
-	a: ^engine.Assets,
+	ga: ^GameAssets,
 	input: ^engine.InputState,
 	camera: ^raylib.Camera2D,
 	tilemap: ^engine.Tilemap,
@@ -138,7 +62,7 @@ process_frame :: proc(
 
 	for ; accumulator^ >= config.CONFIG.fixed_timestep;
 	    accumulator^ -= config.CONFIG.fixed_timestep {
-		fixed_update(w, a, input, camera, tilemap, config.CONFIG.fixed_timestep)
+		fixed_update(w, ga, input, camera, tilemap, config.CONFIG.fixed_timestep)
 	}
 }
 
@@ -154,7 +78,7 @@ present_frame :: proc(w: ^engine.World, camera: ^raylib.Camera2D, tilemap: ^engi
 // The main loop: processes frames and presents them until the window is closed.
 run_game_loop :: proc(
 	w: ^engine.World,
-	a: ^engine.Assets,
+	ga: ^GameAssets,
 	input: ^engine.InputState,
 	camera: ^raylib.Camera2D,
 	tilemap: ^engine.Tilemap,
@@ -162,7 +86,7 @@ run_game_loop :: proc(
 	accumulator: f32 = 0
 
 	for !raylib.WindowShouldClose() {
-		process_frame(&accumulator, w, a, input, camera, tilemap)
+		process_frame(&accumulator, w, ga, input, camera, tilemap)
 		present_frame(w, camera, tilemap)
 	}
 }
@@ -180,16 +104,18 @@ main :: proc() {
 	engine.assets_init(&a)
 	defer engine.assets_destroy(&a)
 
+	ga: GameAssets
+	game_assets_init(&ga, &a)
+	defer game_assets_destroy(&ga)
+
 	tilemap := load_tilemap(&a)
-	register_player_anim_clips(&a)
 
 	w: engine.World
 	defer engine.world_destroy(&w)
 
 	input: engine.InputState
 	camera: raylib.Camera2D
-	init_game(&w, &a, &camera)
+	init_game(&w, &ga, &camera)
 
-	run_game_loop(&w, &a, &input, &camera, &tilemap)
+	run_game_loop(&w, &ga, &input, &camera, &tilemap)
 }
-

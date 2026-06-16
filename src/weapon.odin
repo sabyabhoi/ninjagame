@@ -3,8 +3,7 @@ package main
 import "engine"
 import "vendor:raylib"
 
-// Mirrors the owner's attack animation and follows their position.
-weapon_sync_system :: proc(w: ^engine.World) {
+weapon_anim_system :: proc(w: ^engine.World, ga: ^GameAssets, dt: f32) {
 	for owner, equip in w.equipped_weapon.data {
 		weapon := equip.weapon_entity
 
@@ -12,18 +11,27 @@ weapon_sync_system :: proc(w: ^engine.World) {
 			if wt, ok2 := engine.store_get(&w.transforms, weapon); ok2 do wt^ = ot^
 		}
 
-		owner_state, os_ok := engine.store_get(&w.animations, owner)
-		wstate, ws_ok := engine.store_get(&w.animations, weapon)
+		owner_sm, osm_ok := engine.store_get(&w.player_anim, owner)
+		owner_facing, of_ok := engine.store_get(&w.facings, owner)
+		wsm, wsm_ok := engine.store_get(&w.weapon_anim, weapon)
+		wanim, wa_ok := engine.store_get(&w.animations, weapon)
 		wsprite, sp_ok := engine.store_get(&w.sprites, weapon)
-		if !os_ok || !ws_ok || !sp_ok do continue
+		if !osm_ok || !of_ok || !wsm_ok || !wa_ok || !sp_ok do continue
 
-		if _, attacking := engine.store_get(&w.attack_state, owner); attacking {
-			engine.animation_set_state(wstate, .AttackWeapon, owner_state.direction)
+		next: engine.WeaponAnimState = .Hidden
+		if owner_sm.current == .Attack do next = .Attacking
+
+		engine.state_machine_transition(wsm, next)
+
+		clip := weapon_clip(ga, wsm.current, owner_facing.direction)
+		engine.animation_set_clip(wanim, clip)
+
+		if wsm.current == .Attacking {
 			wsprite.tint = raylib.WHITE
 		} else {
-			engine.animation_set_state(wstate, .None, owner_state.direction)
 			wsprite.tint = raylib.BLANK
 		}
+
+		engine.state_machine_tick(wsm, dt)
 	}
 }
-

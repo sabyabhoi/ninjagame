@@ -10,15 +10,6 @@ AnimationClip :: struct {
 	duration: f32, // Seconds each frame is displayed before advancing.
 }
 
-// Named animation clips available to entities.
-AnimationKind :: enum {
-	None,
-	Idle,
-	Walk,
-	Attack,
-	AttackWeapon,
-}
-
 // Logical facing direction for animated entities.
 Direction :: enum {
 	Down,
@@ -94,31 +85,37 @@ animation_apply_sprite_frame :: proc(
 	sprite.source = clip.frames[state.frame_index]
 }
 
-// Sets the active clip and facing, resetting playback when either changes.
-animation_set_state :: proc(state: ^AnimationState, kind: AnimationKind, dir: Direction) {
-	if state.kind != kind || state.direction != dir {
+// Sets the active clip, resetting playback when the clip changes.
+animation_set_clip :: proc(state: ^AnimationState, clip: ^AnimationClip) {
+	if state.clip != clip {
 		state.frame_index = 0
 		state.timer = 0
 	}
-	state.kind = kind
-	state.direction = dir
+	state.clip = clip
 }
 
-update_entity_direction :: proc(velocity: ^Velocity, entity: Entity, state: ^AnimationState) {
+animation_is_clip_complete :: proc(state: ^AnimationState) -> bool {
+	if state.clip == nil || len(state.clip.frames) == 0 do return true
+	total := f32(len(state.clip.frames)) * state.clip.duration
+	elapsed := f32(state.frame_index) * state.clip.duration + state.timer
+	return elapsed >= total
+}
+
+update_entity_facing :: proc(velocity: ^Velocity, facing: ^Facing) {
 	abs_x := math.abs(velocity.value.x)
 	abs_y := math.abs(velocity.value.y)
 
 	if abs_x >= abs_y {
 		if velocity.value.x < 0 {
-			state.direction = .Left
+			facing.direction = .Left
 		} else {
-			state.direction = .Right
+			facing.direction = .Right
 		}
 	} else {
 		if velocity.value.y < 0 {
-			state.direction = .Up
+			facing.direction = .Up
 		} else {
-			state.direction = .Down
+			facing.direction = .Down
 		}
 	}
 }
@@ -126,15 +123,15 @@ update_entity_direction :: proc(velocity: ^Velocity, entity: Entity, state: ^Ani
 // Advances the animation timer and applies the current frame to the sprite.
 entity_advance_animation :: proc(
 	w: ^World,
-	a: ^Assets,
 	entity: Entity,
 	state: ^AnimationState,
 	dt: f32,
 ) {
 	sprite, sprite_ok := store_get(&w.sprites, entity)
+	if !sprite_ok do return
 
-	clip := assets_get_clip(a, state.kind, state.direction)
-	if len(clip.frames) == 0 do return
+	clip := state.clip
+	if clip == nil || len(clip.frames) == 0 do return
 
 	state.timer += dt
 	for state.timer >= clip.duration {
@@ -146,12 +143,11 @@ entity_advance_animation :: proc(
 }
 
 // Sets an entity's sprite to the first frame of its current animation clip.
-animation_apply_initial_frame :: proc(w: ^World, a: ^Assets, entity: Entity) {
+animation_apply_initial_frame :: proc(w: ^World, entity: Entity) {
 	state, state_ok := store_get(&w.animations, entity)
 	sprite, sprite_ok := store_get(&w.sprites, entity)
 	if !state_ok || !sprite_ok do return
+	if state.clip == nil do return
 
-	clip := assets_get_clip(a, state.kind, state.direction)
-	animation_apply_sprite_frame(sprite, state, clip)
+	animation_apply_sprite_frame(sprite, state, state.clip)
 }
-
