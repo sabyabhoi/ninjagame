@@ -29,3 +29,4 @@ state_machine_tick :: proc(sm: ^StateMachine($S), dt: f32) {
 state_machine_just_entered :: proc(sm: ^StateMachine($S)) -> bool {
 	return sm.current != sm.previous
 }
+

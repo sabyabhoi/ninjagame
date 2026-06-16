@@ -7,7 +7,7 @@ import "vendor:raylib"
 AnimationClip :: struct {
 	texture:  raylib.Texture2D, // Shared texture for all frames in this clip.
 	frames:   []raylib.Rectangle, // Source rects played in order.
-	duration: f32, // Seconds each frame is displayed before advancing.
+	frame_duration: f32, // Seconds each frame is displayed before advancing.
 }
 
 // Logical facing direction for animated entities.
@@ -45,7 +45,7 @@ create_clip_from_horizontal_strip :: proc(
 		}
 	}
 
-	return {texture = tex, frames = frames, duration = duration}
+	return {texture = tex, frames = frames, frame_duration = duration}
 }
 
 // Builds one animation clip from a single column of a directional sprite sheet grid.
@@ -70,7 +70,7 @@ create_clip_from_sheet_column :: proc(
 		}
 	}
 
-	return {texture = tex, frames = frames, duration = duration}
+	return {texture = tex, frames = frames, frame_duration = duration}
 }
 
 // Updates a sprite's texture and source rect to match the current animation frame.
@@ -96,8 +96,8 @@ animation_set_clip :: proc(state: ^AnimationState, clip: ^AnimationClip) {
 
 animation_is_clip_complete :: proc(state: ^AnimationState) -> bool {
 	if state.clip == nil || len(state.clip.frames) == 0 do return true
-	total := f32(len(state.clip.frames)) * state.clip.duration
-	elapsed := f32(state.frame_index) * state.clip.duration + state.timer
+	total := f32(len(state.clip.frames)) * state.clip.frame_duration
+	elapsed := f32(state.frame_index) * state.clip.frame_duration + state.timer
 	return elapsed >= total
 }
 
@@ -134,8 +134,8 @@ entity_advance_animation :: proc(
 	if clip == nil || len(clip.frames) == 0 do return
 
 	state.timer += dt
-	for state.timer >= clip.duration {
-		state.timer -= clip.duration
+	for state.timer >= clip.frame_duration {
+		state.timer -= clip.frame_duration
 		state.frame_index = (state.frame_index + 1) % len(clip.frames)
 	}
 

@@ -8,7 +8,12 @@ weapon_anim_system :: proc(w: ^engine.World, ga: ^GameAssets, dt: f32) {
 		weapon := equip.weapon_entity
 
 		if owner_transform, ok := engine.store_get(&w.transforms, owner); ok {
-			if weapon_transform, ok2 := engine.store_get(&w.transforms, weapon); ok2 do weapon_transform^ = owner_transform^
+			if weapon_transform, ok2 := engine.store_get(&w.transforms, weapon); ok2 {
+				weapon_transform^ = owner_transform^
+				// TODO: Calculate these values instead of hard-coding them
+				weapon_transform.position.x -= 66
+				weapon_transform.position.y -= 70
+			}
 		}
 
 		owner_state_machine, osm_ok := engine.store_get(&w.player_anim, owner)
