@@ -8,6 +8,7 @@ AnimationClip :: struct {
 	texture:  raylib.Texture2D, // Shared texture for all frames in this clip.
 	frames:   []raylib.Rectangle, // Source rects played in order.
 	frame_duration: f32, // Seconds each frame is displayed before advancing.
+	loop:     bool, // Whether playback wraps to frame 0; one-shot clips hold the last frame.
 }
 
 // Logical facing direction for animated entities.
@@ -45,7 +46,7 @@ create_clip_from_horizontal_strip :: proc(
 		}
 	}
 
-	return {texture = tex, frames = frames, frame_duration = duration}
+	return {texture = tex, frames = frames, frame_duration = duration, loop = true}
 }
 
 // Builds one animation clip from a single column of a directional sprite sheet grid.
@@ -70,7 +71,7 @@ create_clip_from_sheet_column :: proc(
 		}
 	}
 
-	return {texture = tex, frames = frames, frame_duration = duration}
+	return {texture = tex, frames = frames, frame_duration = duration, loop = true}
 }
 
 // Updates a sprite's texture and source rect to match the current animation frame.
@@ -136,7 +137,16 @@ entity_advance_animation :: proc(
 	state.timer += dt
 	for state.timer >= clip.frame_duration {
 		state.timer -= clip.frame_duration
-		state.frame_index = (state.frame_index + 1) % len(clip.frames)
+		if state.frame_index + 1 < len(clip.frames) {
+			state.frame_index += 1
+		} else if clip.loop {
+			state.frame_index = 0
+		} else {
+			// One-shot clip: hold the final frame instead of snapping back to the start.
+			state.frame_index = len(clip.frames) - 1
+			state.timer = 0
+			break
+		}
 	}
 
 	animation_apply_sprite_frame(sprite, state, clip)

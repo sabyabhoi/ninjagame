@@ -82,6 +82,9 @@ game_assets_init :: proc(ga: ^GameAssets, a: ^engine.Assets) {
 			attack_frames_per_direction,
 			config.CONFIG.player.attack_frame_duration,
 		)
+		// The swing plays once and holds its final frame; without this it would
+		// loop back to the start frame for one tick before being hidden.
+		ga.weapon.clips[.Attacking][dir].loop = false
 		// Hidden uses an empty clip; playback and rendering are skipped.
 		ga.weapon.clips[.Hidden][dir] = {}
 	}
