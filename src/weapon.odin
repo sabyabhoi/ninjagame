@@ -7,12 +7,14 @@ weapon_anim_system :: proc(w: ^engine.World, ga: ^GameAssets, dt: f32) {
 	for owner, equip in w.equipped_weapon.data {
 		weapon := equip.weapon_entity
 
+
 		if owner_transform, ok := engine.store_get(&w.transforms, owner); ok {
 			if weapon_transform, ok2 := engine.store_get(&w.transforms, weapon); ok2 {
 				weapon_transform^ = owner_transform^
-				// TODO: Calculate these values instead of hard-coding them
-				weapon_transform.position.x -= 66
-				weapon_transform.position.y -= 70
+				if owner_sprite, ok3 := engine.store_get(&w.sprites, owner); ok3 {
+					weapon_transform.position -=
+						{f32(owner_sprite.texture.width), f32(owner_sprite.texture.height)} / 2
+				}
 			}
 		}
 
