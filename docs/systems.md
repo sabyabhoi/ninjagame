@@ -77,9 +77,10 @@ Two steps:
 1. **Sort by Y.** It collects sprites into a list and stable-sorts them by their
    `position.y`. Entities lower on screen draw last (on top), giving a correct
    top-down overlap so characters "stand in front of" things above them.
-2. **Draw.** For each sprite it computes the destination rectangle (position
-   scaled by the transform's `scale`) and calls `raylib.DrawTexturePro` with the
-   sprite's source frame and tint.
+2. **Draw.** For each sprite it computes the destination rectangle at the
+   transform's native position and the source frame's native size, then calls
+   `raylib.DrawTexturePro` with the sprite's source frame and tint. The global
+   `CONFIG.render_scale` is applied once via the camera's zoom, not per sprite.
 
 ## How the systems fit together
 

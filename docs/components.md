@@ -6,12 +6,14 @@ structs contain logic.
 
 ## Transform (`world.odin`)
 
-Where and how big an entity is.
+Where an entity is, in native (unscaled) pixels. There is no per-entity size
+multiplier: the whole world is scaled uniformly at render time by the camera's
+zoom (`CONFIG.render_scale`), so positions and sizes are authored in native art
+pixels.
 
 ```odin
 Transform :: struct {
-    position: raylib.Vector2,  // x, y in the world
-    scale:    raylib.Vector2,  // size multiplier (player uses 4x)
+    position: raylib.Vector2,  // x, y in the world (native pixels)
 }
 ```
 
@@ -72,7 +74,7 @@ components:
 ```odin
 spawn_player :: proc(w: ^World, a: ^Assets, position: raylib.Vector2) -> Entity {
     player := entity_create(w)
-    store_add(&w.transforms, player, Transform{position = position, scale = {4, 4}})
+    store_add(&w.transforms, player, Transform{position = position})
     store_add(&w.velocities, player, Velocity{})
     store_add(&w.sprites, player, Sprite{texture = a.clips[.Idle][.Down].texture, tint = WHITE})
     store_add(&w.animations, player, AnimationState{kind = .Idle, direction = .Down})

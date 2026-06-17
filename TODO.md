@@ -1,6 +1,9 @@
-# Weapon loading
+# Collision system
 
-1. [ ] Load weapon spritesheet 
-2. [ ] Break it down into animation clips (for each direction)
-3. [ ] This clip should be played when the player attacks
-4. [ ] weapon.transform = player.transform (+ offset)
+Keeping it very simple for now: I want to block the player from moving into a wall. A wall is nothing but a special type of block in the world. 
+
+How's the player represented in the system: an entity with some ID
+
+How's the block represented in the system: As another entity, perhaps?
+
+Then we define a system for checking collision between these two entities. 

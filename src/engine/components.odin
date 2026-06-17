@@ -2,10 +2,10 @@ package engine
 
 import "vendor:raylib"
 
-// Spatial placement and size multiplier for an entity on screen.
+// Spatial placement for an entity in the world, in native (unscaled) pixels.
+// Global render scaling is applied uniformly by the camera, not per entity.
 Transform :: struct {
-	position: raylib.Vector2, // Top-left corner in screen space.
-	scale:    raylib.Vector2, // Multiplier applied to the sprite source rect.
+	position: raylib.Vector2, // Top-left corner in world space.
 }
 
 // Per-frame movement vector for physics integration.

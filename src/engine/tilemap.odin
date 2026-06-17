@@ -15,7 +15,6 @@ Tilemap :: struct {
 	tile_height: u64,
 	data:        [][]u64,
 	tileset:     Tileset,
-	scale:       raylib.Vector2,
 }
 
 Tileset :: struct {
@@ -31,10 +30,10 @@ render_tilemap :: proc(tilemap: ^Tilemap) {
 		for col in 0 ..< tilemap.num_cols {
 			src_rect := get_tile_rect_from_index(&tilemap.tileset, tilemap.data[row][col])
 			dest_rect := raylib.Rectangle {
-				x      = f32(col * tilemap.tile_width) * tilemap.scale.x,
-				y      = f32(row * tilemap.tile_height) * tilemap.scale.y,
-				width  = f32(tilemap.tile_width) * tilemap.scale.x,
-				height = f32(tilemap.tile_height) * tilemap.scale.y,
+				x      = f32(col * tilemap.tile_width),
+				y      = f32(row * tilemap.tile_height),
+				width  = f32(tilemap.tile_width),
+				height = f32(tilemap.tile_height),
 			}
 			raylib.DrawTexturePro(
 				tilemap.tileset.texture,
@@ -195,7 +194,6 @@ load_world_tilemap :: proc(a: ^Assets, tilemap: ^Tilemap, filepath: string) -> b
 	tilemap.num_rows = fetch_attribute_u64(doc, 0, "height") or_return
 	tilemap.tile_width = fetch_attribute_u64(doc, 0, "tilewidth") or_return
 	tilemap.tile_height = fetch_attribute_u64(doc, 0, "tileheight") or_return
-	tilemap.scale = {4.0, 4.0}
 
 	tileset_id := xml.find_child_by_ident(doc, 0, "tileset") or_return
 

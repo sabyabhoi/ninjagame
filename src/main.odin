@@ -42,7 +42,7 @@ load_tilemap :: proc(a: ^engine.Assets) -> engine.Tilemap {
 // Initialises the game world, spawns the player, and configures the camera.
 init_game :: proc(w: ^engine.World, ga: ^GameAssets, camera: ^raylib.Camera2D) {
 	engine.world_init(w)
-	spawn_player(w, ga, {400, 400})
+	spawn_player(w, ga, {100, 100})
 	engine.init_camera(camera)
 	raylib.SetTargetFPS(config.CONFIG.target_fps)
 }

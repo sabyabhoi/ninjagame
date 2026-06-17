@@ -47,8 +47,8 @@ render_system :: proc(w: ^World) {
 		dest := raylib.Rectangle {
 			x      = t.position.x,
 			y      = t.position.y,
-			width  = src.width * t.scale.x,
-			height = src.height * t.scale.y,
+			width  = src.width,
+			height = src.height,
 		}
 
 		raylib.DrawTexturePro(sprite.texture, src, dest, {0, 0}, 0, sprite.tint)

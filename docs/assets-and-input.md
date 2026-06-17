@@ -63,5 +63,6 @@ is cheap.
 ## Configuration (`src/config.odin`)
 
 All tunable values live in one `CONFIG` constant so behavior can be adjusted in
-a single place: window size and title, `player_speed`, `player_scale`, the idle
-and walk frame durations, the `fixed_timestep`, and `target_fps`.
+a single place: window size and title, the global `render_scale` (the single
+zoom applied to the whole world at render time), `player.speed`, the idle and
+walk frame durations, the `fixed_timestep`, and `target_fps`.

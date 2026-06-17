@@ -14,14 +14,14 @@ Config :: struct {
 	window_width:   i32, // Window width in pixels.
 	window_height:  i32, // Window height in pixels.
 	window_title:   string, // Title shown in the window bar.
+	render_scale:   f32, // Global zoom applied to the whole world at render time.
 	player:         PlayerConfig,
 	fixed_timestep: f32, // Simulation delta used for fixed-rate updates.
 	target_fps:     i32, // Frame rate cap for the render loop.
 }
 
 PlayerConfig :: struct {
-	speed:                 f32, // Movement speed in pixels per second.
-	scale:                 f32, // Uniform draw scale applied to the player sprite.
+	speed:                 f32, // Movement speed in native pixels per second.
 	idle_frame_duration:   f32, // Seconds each idle frame is held.
 	walk_frame_duration:   f32, // Seconds each walk frame is held.
 	attack_frame_duration: f32, // Seconds each attack frame is held.
@@ -39,9 +39,9 @@ CONFIG :: Config {
 	window_width = 1200,
 	window_height = 800,
 	window_title = "Ninja Game",
+	render_scale = 4,
 	player = {
-		speed = 300,
-		scale = 4,
+		speed = 75,
 		idle_frame_duration = 0.15,
 		walk_frame_duration = 0.10,
 		attack_frame_duration = 0.10,

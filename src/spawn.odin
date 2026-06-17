@@ -1,6 +1,5 @@
 package main
 
-import "config"
 import "engine"
 import "vendor:raylib"
 
@@ -13,7 +12,6 @@ spawn_player :: proc(
 	player := engine.entity_create(w)
 	player_transform := engine.Transform {
 		position = position,
-		scale    = {config.CONFIG.player.scale, config.CONFIG.player.scale},
 	}
 
 	idle_clip := player_clip(ga, .Idle, .Down)
